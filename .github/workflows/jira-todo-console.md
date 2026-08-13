@@ -14,34 +14,33 @@ network:
   allowed:
     - defaults
     - mcp.atlassian.com
-tools:
-  bash: [atlassian]
-  cli-proxy: true
 mcp-servers:
   atlassian:
     type: http
     url: https://mcp.atlassian.com/v1/mcp
     headers:
-      Authorization: Basic ${{ secrets.ATLASSIAN_MCP_BASIC }}
+      Authorization: "Basic ${{ secrets.ATLASSIAN_MCP_BASIC }}"
+    allowed:
+      - "searchJiraIssuesUsingJql"
 ---
 
 # Jira To Do Console
 
 ## Task
 
-Use the Atlassian CLI to query Jira with this JQL:
+Call the `searchJiraIssuesUsingJql` tool with these parameters:
 
-```text
-project = FEAT AND status = "To Do" ORDER BY priority DESC, updated DESC
-```
+- `cloudId`: `15f7261f-715d-44cc-bdbd-6a1ad73705dc`
+- `jql`: `project = FEAT AND status = "To Do" ORDER BY priority DESC, updated DESC`
+- `maxResults`: 20
 
-First run `atlassian --help` to identify the available Jira search command,
-then invoke that command. Keep its result visible in standard output so it
-appears in the workflow's Actions log.
+Print each matching ticket to standard output, one per line:
 
-Request and display each matching ticket's key, summary, status, assignee, and
-priority. If no tickets match, print a clear message stating that no `FEAT`
-tickets are currently in `To Do`.
+`KEY | STATUS | PRIORITY | ASSIGNEE | SUMMARY`
 
-Do not create, update, transition, comment on, or otherwise modify Jira or
-GitHub data.
+If no tickets match, print a clear message saying no FEAT tickets are in To Do.
+
+If the tool call fails, print the full raw error text. Do not summarise it and
+do not attempt a workaround.
+
+Do not create, update, transition, or comment on Jira or GitHub data.
