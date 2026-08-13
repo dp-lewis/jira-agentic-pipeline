@@ -5,6 +5,7 @@ description: Print FEAT Jira tickets with status To Do to the workflow log.
 on:
   workflow_dispatch:
 permissions:
+  contents: read
   copilot-requests: write
 strict: true
 features:
