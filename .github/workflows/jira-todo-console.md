@@ -21,7 +21,7 @@ mcp-servers:
     type: http
     url: https://mcp.atlassian.com/v1/mcp
     headers:
-      Authorization: Bearer ${{ secrets.ATLASSIAN_MCP_TOKEN }}
+      Authorization: Basic ${{ secrets.ATLASSIAN_MCP_TOKEN_BASIC }}
 ---
 
 # Jira To Do Console
