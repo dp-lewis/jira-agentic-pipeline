@@ -1,6 +1,6 @@
 ---
 emoji: 🗺️
-name: Jira Ready Ticket Planner
+name: Jira To Do Ticket Planner
 description: Assess one agent-ready Jira ticket and publish an execution plan.
 on:
   schedule: daily on weekdays
@@ -30,7 +30,7 @@ mcp-servers:
       - "editJiraIssue"
 ---
 
-# Jira Ready Ticket Planner
+# Jira To Do Ticket Planner
 
 ## Task
 
@@ -40,10 +40,10 @@ Use the Atlassian MCP CLI to process at most one Jira ticket for cloud ID
 1. Search with this JQL and `maxResults: 1`:
 
    ```jql
-   status = "Ready" AND labels = "agent-ready" ORDER BY priority DESC, updated ASC
+   status = "To Do" AND labels = "agent-ready" ORDER BY priority DESC, updated ASC
    ```
 
-   If no issue matches, call `noop` and state that no `agent-ready` Ready ticket
+   If no issue matches, call `noop` and state that no `agent-ready` To Do ticket
    was available.
 
 2. Fetch the selected issue's full details, including its description,
