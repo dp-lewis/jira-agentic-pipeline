@@ -176,9 +176,8 @@ file changes.
 
 - Branch: `plan/<TICKET-KEY>`
 - Title: `<TICKET-KEY>: plan`
-- Body: begin with `<!-- jira-ticket-planner:v2 ticket:<TICKET-KEY> -->`, then
-  include the ticket summary, a link to the Jira ticket, and a note that applying
-  the `plan-approved` label will trigger implementation.
+- Body: include the ticket summary, a link to the Jira ticket, and a note that
+  applying the `plan-approved` label will trigger implementation.
 
 Use `safeoutputs create_pull_request` exactly once. Do not add a Jira comment or
 change Jira labels in this workflow; the post-PR handoff workflow performs those

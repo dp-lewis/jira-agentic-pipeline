@@ -58,7 +58,6 @@ Continue only when all of these are true:
 2. Its head branch is exactly `plan/<TICKET-KEY>`.
 3. Its title is exactly `<TICKET-KEY>: plan`.
 4. It changes exactly one file: `plans/<TICKET-KEY>.md`.
-5. Its body begins with `<!-- jira-ticket-planner:v2 ticket:<TICKET-KEY> -->`.
 
 Derive `<TICKET-KEY>` from the changed plan-file path. If any check fails, call
 `noop` without reading or modifying Jira.
@@ -72,7 +71,10 @@ Continue only when its status is exactly `To Do` and its labels include
 If the ticket already has a comment containing
 `<!-- jira-ticket-planner:v2 pr:<PR-URL> -->`, do not add another comment.
 Otherwise, add exactly one Jira comment beginning with that marker. Include the
-pull request URL and a concise two-line summary taken from the plan file.
+pull request URL, the heading `## Plan ready for review`, and a concise two-line
+summary taken from the plan file. State that the draft plan is ready for review
+and that applying the `plan-approved` label to the pull request will trigger
+implementation.
 
 Only after the comment exists, replace `agent-ready` with `agent-planned`,
 retaining every other existing label. Do not change the ticket's status,
