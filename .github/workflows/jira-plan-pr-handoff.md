@@ -4,7 +4,7 @@ name: Jira Plan PR Handoff
 description: Link a created Jira plan PR back to its eligible Jira ticket.
 on:
   pull_request:
-    types: [opened, synchronize]
+    types: [synchronize]
     paths:
       - "plans/*.md"
 permissions:
