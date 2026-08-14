@@ -28,6 +28,8 @@ mcp-servers:
       - "getJiraIssue"
       - "addCommentToJiraIssue"
       - "editJiraIssue"
+safe-outputs:
+  report-failure-as-issue: false
 ---
 
 # Jira To Do Ticket Planner
@@ -43,8 +45,9 @@ Use the Atlassian MCP CLI to process at most one Jira ticket for cloud ID
    status = "To Do" AND labels = "agent-ready" ORDER BY priority DESC, updated ASC
    ```
 
-   If no issue matches, call `noop` and state that no `agent-ready` To Do ticket
-   was available.
+   If no issue matches, call `noop` exactly once with a short explanation that
+   no `agent-ready` To Do ticket was available. Do not call `create_issue` or
+   modify Jira.
 
 2. Fetch the selected issue's full details, including its description,
    acceptance criteria, linked issues, attachments, and comments. Inspect the
@@ -55,8 +58,8 @@ Use the Atlassian MCP CLI to process at most one Jira ticket for cloud ID
 3. If the issue already has a comment containing
    `<!-- jira-ready-ticket-planner:v1 -->`, do not add another plan comment.
    Replace its `agent-ready` label with `agent-planned`, retaining all other
-   existing labels. If the label update cannot be completed, call
-   `report_incomplete` with the error.
+   existing labels. If the label update cannot be completed, stop and surface
+   the tool error without creating a GitHub issue.
 
 4. Otherwise, add exactly one Jira comment using `addCommentToJiraIssue`. Begin
    it with `<!-- jira-ready-ticket-planner:v1 -->` and use this structure:
@@ -81,6 +84,6 @@ Use the Atlassian MCP CLI to process at most one Jira ticket for cloud ID
    Do not change the issue's status, assignee, priority, fields, or any other
    Jira data.
 
-If Jira access or a required write fails, call `report_incomplete` with the
-tool error and do not attempt a workaround. Do not create or modify GitHub
-resources or repository files.
+If Jira access or a required write fails, stop and surface the tool error
+without attempting a workaround. Do not call `safeoutputs` or create or modify
+GitHub resources or repository files.
