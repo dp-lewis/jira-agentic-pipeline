@@ -35,10 +35,13 @@ These are owned by the pipeline and are deliberately not configurable:
 - Plan branches are `plan/<TICKET-KEY>`.
 - Plan files are `plans/<TICKET-KEY>.md`.
 - A plan pull request is titled `<TICKET-KEY>: plan` until implementation.
-- The lifecycle labels are `agent-ready`, `agent-planned`, `plan-approved`,
-  and `copilot-review-addressed`. They appear in workflow frontmatter guards
-  and must stay literal so the safety boundary is auditable in the compiled
-  lockfile.
+- The lifecycle labels are `agent-ready`, `agent-planned`, `agent-rejected`,
+  `plan-approved`, and `copilot-review-addressed`. They appear in workflow
+  frontmatter guards and must stay literal so the safety boundary is auditable
+  in the compiled lockfile.
+- `agent-rejected` is terminal. Only a human returns a rejected ticket to the
+  pipeline, by removing it and adding `agent-ready`. No workflow may restore
+  `agent-ready` on its own.
 
 ### Authoring note
 

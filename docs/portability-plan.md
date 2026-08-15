@@ -224,10 +224,15 @@ issue.
 These are single-operator assumptions rather than portability blockers, but
 they surface immediately at team scale.
 
-**No abandon path.** Nothing ever removes `agent-planned`. If a reviewer
-closes a plan PR as unsatisfactory, the ticket is stranded — the planner will
-never select it again. Add a reject flow: closing a plan PR restores
-`agent-ready` or applies `agent-rejected`.
+~~**No abandon path.**~~ **Closed.** `jira-plan-pr-closed.md` now fires on
+`pull_request: closed` for `plan/*` branches. A merged PR removes
+`agent-planned` and records delivery; a PR closed unmerged replaces it with
+`agent-rejected` and explains how to re-enter the ticket.
+
+The reject path deliberately does **not** restore `agent-ready`, which was the
+original suggestion. Doing so would loop: the planner would regenerate the same
+plan from the same unchanged ticket, and a person would have to close it again.
+`agent-rejected` is terminal until a human swaps the label back.
 
 **No plan revision path.** The plan template writes `Plan v1`
 (`jira-todo-ticket-planner.md:152`) but nothing ever produces a v2. A reviewer
@@ -249,7 +254,7 @@ fine-grained PAT with Contents write from the install requirements — a
 meaningful adoption barrier at most organisations.
 
 **Blanket silent failure.** `report-failure-as-issue: false` is correct for
-the empty-queue noop, but as a default across all five workflows it means an
+the empty-queue noop, but as a default across every workflow it means an
 installing team who is not watching the Actions tab never learns that anything
 broke. Reconsider per workflow.
 
@@ -271,7 +276,9 @@ broke. Reconsider per workflow.
 4. ~~**Convert the console workflow into preflight.**~~ **Done.** Deterministic
    checks in a `steps:` block, live Jira check by the agent, ready/degraded/
    blocking classification, and no issue filed when the repository is healthy.
-5. **Add the abandon and reject path.**
+5. ~~**Add the abandon and reject path.**~~ **Done.** Both outcomes handled,
+   with `agent-rejected` as a terminal state rather than an automatic
+   re-plan.
 6. **Choose and implement distribution** via gh-aw shared workflows.
 7. **Add a LICENSE.** Nobody installs an unlicensed pipeline into their
    organisation.

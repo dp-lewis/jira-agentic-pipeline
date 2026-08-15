@@ -20,18 +20,20 @@ flowchart TD
     C --> D[Jira comment: plan ready + agent-planned]
     D --> E{Human reviews plan}
     E -->|adds plan-approved| F[Implementation]
-    E -->|closes PR| X[Stops]
+    E -->|closes PR| X[Jira: agent-rejected, released]
     F --> G[PR retitled, marked ready for review]
     G --> H[Jira comment: implementation ready]
     G --> I[Copilot review]
     I --> J[One bounded fix cycle]
     J --> K{Human reviews and merges}
+    K -->|merged| L[Jira: delivered, agent-planned removed]
+    K -->|closed| X
 ```
 
 The ticket never leaves human control. The agent's authority is capped at
 "open a draft PR containing one markdown file" until someone approves it.
 
-### The five workflows
+### The six workflows
 
 | Workflow | Trigger | What it may do |
 | --- | --- | --- |
@@ -40,6 +42,7 @@ The ticket never leaves human control. The agent's authority is capped at
 | `implement-approved-jira-plan` | Human adds `plan-approved` | Implement the plan, retitle the PR, mark ready for review |
 | `jira-implementation-pr-handoff` | Implementation workflow succeeds | Comment on Jira that review is needed |
 | `respond-to-copilot-review` | Copilot submits a review | One bounded fix cycle, then self-label to stop |
+| `jira-plan-pr-closed` | Plan PR closed or merged | Release the ticket from the pipeline and record the outcome |
 
 Each stage independently re-validates the PR — branch name, title, draft
 state, labels, changed files — rather than trusting that the previous stage
@@ -159,8 +162,20 @@ To make a ticket eligible: set its status to your configured ready status
 | --- | --- | --- |
 | `agent-ready` | Jira | Eligible for automated planning |
 | `agent-planned` | Jira | A draft plan PR exists, awaiting approval |
+| `agent-rejected` | Jira | A plan PR was closed unmerged; released from the pipeline |
 | `plan-approved` | GitHub PR | A human approved the plan; implementation may begin |
 | `copilot-review-addressed` | GitHub PR | The one automatic response cycle is used up |
+
+Closing a plan PR without merging is a supported way to say no. The ticket is
+released from the pipeline with `agent-rejected` and a Jira comment explaining
+what happened. That state is terminal by design — nothing restores
+`agent-ready` automatically, because the planner would regenerate the same
+plan from the same unchanged ticket and you would have to close it again. Fix
+whatever made the plan unsuitable, then swap the label back yourself.
+
+Merging a plan PR removes `agent-planned` and comments that the work was
+delivered. Jira status is never changed by any workflow; moving the ticket to
+Done stays a human decision.
 
 ## Configuration
 
@@ -223,7 +238,8 @@ compiled `.lock.yml`.
 | Planner finds nothing | No ticket in the configured projects has both the ready status and `agent-ready` |
 | Plan PR created but Jira silent | `GH_AW_CI_TRIGGER_TOKEN` missing or lacking Contents write |
 | `plan-approved` does nothing | PR is not a draft, or its title is not `<KEY>: plan` |
-| Ticket stuck in `agent-planned` | Known gap: no automated reject path yet |
+| Ticket stuck in `agent-planned` | Its plan PR is still open — close or merge it to release the ticket |
+| Ticket in `agent-rejected` not replanned | Terminal by design; remove the label and add `agent-ready` |
 
 Inspect any run with `gh aw logs <workflow> -c 1 --artifacts agent`. The
 rendered prompt at `aw-prompts/prompt.txt` shows exactly what the agent saw,
@@ -259,7 +275,6 @@ gh aw compile <workflow-id> --strict --approve
 
 Tracked in the [portability plan](docs/portability-plan.md):
 
-- No abandon path — a closed plan PR leaves the ticket in `agent-planned`
 - No plan revision path — plans are v1 only
 - Implementation pushes may not trigger CI on the PR
 - Not yet published as an installable `gh aw` package
