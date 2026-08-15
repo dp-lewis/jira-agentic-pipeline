@@ -124,6 +124,13 @@ push succeeds, replace the pull request title and body using
   implemented change factually, list the validation commands and outcomes, and
   link to `plans/<TICKET-KEY>.md`.
 
+Use the triggering pull request number from the workflow context as
+`pull_request_number` in this output and in every other pull-request safe
+output below. `target: triggering` restricts the permitted target; it does not
+make the triggering pull request number unavailable. Do not omit the
+`update_pull_request` output because of a missing triggering-event context when
+the workflow context provides the pull request number.
+
 Only after the title and body update succeeds, mark the pull request ready for
 review using `safeoutputs mark_pull_request_as_ready_for_review` exactly once.
 Then add one pull request comment with:
@@ -139,4 +146,8 @@ Then add one pull request comment with:
 ```
 
 Use factual, concise content. State validation commands that were run and their
-outcome. Do not remove the `plan-approved` label or merge the pull request.
+outcome. A successful implementation must produce all four outputs in this
+order: push, update title/body, mark ready, and completion comment. If the title
+or body cannot be produced, do not mark the pull request ready or post the
+completion comment; instead, add the single blocked comment. Do not remove the
+`plan-approved` label or merge the pull request.
