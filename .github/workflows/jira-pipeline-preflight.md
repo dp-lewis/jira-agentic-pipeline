@@ -6,6 +6,7 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
+  issues: read
   copilot-requests: write
 strict: true
 features:
@@ -36,26 +37,31 @@ steps:
       # present <value> -> "ok" when non-empty, "missing" otherwise
       present() { [ -n "${1:-}" ] && echo ok || echo missing; }
 
-      # label_state <name> -> "ok" when the label exists, "missing" otherwise
-      label_state() {
-        if gh api "repos/$REPOSITORY/labels/$1" >/dev/null 2>&1; then
+      # api_state <path> -> ok | missing | unknown:<reason>
+      #
+      # A 404 means the resource genuinely does not exist. Anything else —
+      # notably a 403 from an under-permissioned token — means the check could
+      # not run. Those must never be reported as "missing": a false "missing"
+      # sends someone off to recreate a label that is already there.
+      api_state() {
+        local out rc
+        out="$(gh api "$1" 2>&1)"
+        rc=$?
+        if [ $rc -eq 0 ]; then
           echo ok
-        else
+        elif echo "$out" | grep -q "HTTP 404"; then
           echo missing
+        else
+          echo "unknown:$(echo "$out" | tr '\n' ' ' | cut -c1-80)"
         fi
       }
 
-      # path_state <path> -> "ok" when the path exists on the default branch
-      path_state() {
-        if gh api "repos/$REPOSITORY/contents/$1" >/dev/null 2>&1; then
-          echo ok
-        else
-          echo missing
-        fi
-      }
-
+      # There is no Actions permission scope that lets GITHUB_TOKEN read the
+      # repository's workflow-permissions setting, so this is expected to be
+      # unknown on most runs. It is reported, not treated as a failure.
       can_create_prs="$(gh api "repos/$REPOSITORY/actions/permissions/workflow" \
-        --jq '.can_approve_pull_request_reviews' 2>/dev/null || echo unknown)"
+        --jq '.can_approve_pull_request_reviews' 2>/dev/null \
+        || echo "unknown:GITHUB_TOKEN cannot read repository administration settings; verify manually in Settings > Actions > General")"
 
       jq -n \
         --arg cloud_id      "$(present "$VAR_JIRA_CLOUD_ID")" \
@@ -65,9 +71,9 @@ steps:
         --arg max_files     "${VAR_PLAN_MAX_FILES:-5 (default)}" \
         --arg atlassian     "$([ "$HAS_ATLASSIAN_SECRET" = "true" ] && echo ok || echo missing)" \
         --arg trigger       "$([ "$HAS_TRIGGER_TOKEN" = "true" ] && echo ok || echo missing)" \
-        --arg plan_label    "$(label_state plan-approved)" \
-        --arg review_label  "$(label_state copilot-review-addressed)" \
-        --arg agents_md     "$(path_state AGENTS.md)" \
+        --arg plan_label    "$(api_state "repos/$REPOSITORY/labels/plan-approved")" \
+        --arg review_label  "$(api_state "repos/$REPOSITORY/labels/copilot-review-addressed")" \
+        --arg agents_md     "$(api_state "repos/$REPOSITORY/contents/AGENTS.md")" \
         --arg create_prs    "$can_create_prs" \
         '{
           variables: {
@@ -142,6 +148,17 @@ Read `/tmp/gh-aw/agent/preflight.json`. It was produced before this step by a
 shell check and is authoritative for variables, secrets, labels, and
 repository settings. Do not re-derive those values or contradict them.
 
+Every check holds one of three states, and the third is not a failure:
+
+- `ok` — verified present or enabled.
+- `missing` — verified absent. The API returned 404.
+- `unknown:<reason>` — **the check could not run**, usually because the token
+  lacked permission. This is not evidence of absence. Never report an
+  `unknown` check as missing, never propose a fix for it as though the
+  resource were absent, and never classify the repository as blocking because
+  of one. List these separately as "could not be checked", quote the reason,
+  and say what would let the check run.
+
 ## 2. Check live Jira connectivity
 
 Only if all three variables in `/tmp/gh-aw/agent/preflight.json` are `ok` and
@@ -170,15 +187,19 @@ not attempt a workaround.
 
 Classify the configuration:
 
-- **Blocking** — any required variable missing, the Atlassian secret missing
-  or failing to authenticate, or `plan-approved` missing. The pipeline cannot
-  run.
+- **Blocking** — any required variable `missing`, the Atlassian secret
+  `missing` or failing to authenticate, or `plan-approved` `missing`. The
+  pipeline cannot run.
 - **Degraded** — `GH_AW_CI_TRIGGER_TOKEN` missing (plan PRs will not notify
   Jira), `copilot-review-addressed` missing (the review responder cannot mark
-  itself complete and may repeat), `actions_can_create_pull_requests` not
-  `true` (the planner cannot open its PR), or `AGENTS.md` missing (changes
+  itself complete and may repeat), `actions_can_create_pull_requests` explicitly
+  `false` (the planner cannot open its PR), or `AGENTS.md` missing (changes
   will be implemented without declared validation).
 - **Ready** — everything above is satisfied.
+
+Classify on `missing` and explicit `false` only. A check in an `unknown` state
+does not raise the classification; report it under "could not be checked" and
+carry on.
 
 If the result is **Ready**, call `noop` with a one-line summary including the
 count of ready tickets. Do not create an issue. A healthy repository must not
@@ -196,6 +217,10 @@ Otherwise create exactly one issue titled
 
 | Check | Result | Fix |
 | --- | --- | --- |
+
+### Could not be checked
+
+<omit this section entirely when no check is in an unknown state>
 
 ### Passing checks
 
