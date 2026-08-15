@@ -187,18 +187,37 @@ or updates will clobber local changes.
 
 ### Repurposing the console workflow
 
-`jira-todo-console.md` is currently development scaffolding, but it is most of
-an install-time preflight already. Rename it `jira-pipeline-preflight` and
-have it verify that:
+**Implemented.** `jira-todo-console.md` was development scaffolding; it is now
+`jira-pipeline-preflight.md`, which verifies that:
 
-- the `ATLASSIAN_MCP_BASIC` secret authenticates
-- the configured cloud ID resolves
-- the configured JQL returns results
-- the required GitHub labels exist
-- `GH_AW_CI_TRIGGER_TOKEN` has Contents write, if still required
+- the three required repository variables are set, and what the optional ones
+  resolve to
+- both secrets are present, and that `ATLASSIAN_MCP_BASIC` actually
+  authenticates against the configured site
+- the `plan-approved` and `copilot-review-addressed` labels exist
+- GitHub Actions is permitted to create pull requests
+- a root `AGENTS.md` exists, so changes are validated rather than assumed
+- the scoped JQL returns results
 
 This converts a silent, frustrating install failure into a diagnosable one,
 and becomes the documented first step after configuration.
+
+Two design points worth keeping if this workflow is rewritten:
+
+**The checks run in a `steps:` block, not in the prompt.** Everything except
+live Jira connectivity is a deterministic shell check that writes JSON and a
+job summary before the agent starts. The agent interprets and reports; it does
+not decide whether a label exists. Configuration diagnosis is precisely the
+thing that must not depend on model judgement.
+
+**A healthy repository files no issue.** gh-aw injects an auto-create-issue
+fallback whenever a workflow declares safe outputs, and no frontmatter toggle
+suppresses it — verified by probing `create-issue: false`, `noop: true`, and
+several explicit output declarations, none of which removed
+`safe_outputs_auto_create_issue` from the compiled prompt. The original console
+workflow therefore filed an issue on every successful run. The preflight
+instead instructs `noop` on a ready result, so only a real problem produces an
+issue.
 
 ## Robustness gaps to close
 
@@ -249,7 +268,9 @@ broke. Reconsider per workflow.
    inferred, and — the substantive fix — an agent that runs no validation must
    say so verbatim instead of filling the `### Validation` section with prose
    that reads like verification.
-4. **Convert the console workflow into preflight.**
+4. ~~**Convert the console workflow into preflight.**~~ **Done.** Deterministic
+   checks in a `steps:` block, live Jira check by the agent, ready/degraded/
+   blocking classification, and no issue filed when the repository is healthy.
 5. **Add the abandon and reject path.**
 6. **Choose and implement distribution** via gh-aw shared workflows.
 7. **Add a LICENSE.** Nobody installs an unlicensed pipeline into their

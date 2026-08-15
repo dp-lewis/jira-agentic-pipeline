@@ -45,7 +45,8 @@ Each stage independently re-validates the PR — branch name, title, draft
 state, labels, changed files — rather than trusting that the previous stage
 behaved. A failed check is a `noop`, not a guess.
 
-`daily-activity-report` also lives here. It is unrelated to the pipeline and
+`jira-pipeline-preflight` verifies your configuration on demand — see
+[Verify](#7-verify). `daily-activity-report` is unrelated to the pipeline and
 can be removed without affecting anything.
 
 ## Requirements
@@ -113,11 +114,17 @@ pull requests**. The PAT does not grant this.
 ### 7. Verify
 
 ```bash
-gh aw run jira-todo-console
+gh aw run jira-pipeline-preflight
 ```
 
-This is a read-only check that the secret authenticates, the cloud ID
-resolves, and the scoped JQL returns tickets.
+A read-only check of every step above: required variables, both secrets, the
+two GitHub labels, the Actions pull-request setting, `AGENTS.md`, and live
+Jira connectivity. Results appear in the run's job summary.
+
+It classifies the repository as **ready**, **degraded** (the pipeline runs but
+a stage is impaired), or **blocking** (it cannot run). A ready repository
+produces no issue; anything else files exactly one, naming the precise command
+to fix each failing check.
 
 ## The ticket contract
 
