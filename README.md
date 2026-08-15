@@ -66,7 +66,13 @@ This repository is not yet published as a `gh aw` package. For now, copy
 gh aw compile --strict --approve
 ```
 
-### 2. Set repository variables
+### 2. Declare your conventions
+
+Copy [`templates/AGENTS.md`](templates/AGENTS.md) to your repository root and
+fill it in — the `## Validation` section above all. This is what stops the
+pipeline handing you an unverified diff.
+
+### 3. Set repository variables
 
 ```bash
 gh variable set JIRA_CLOUD_ID     --body "<your-atlassian-cloud-id>"
@@ -79,7 +85,7 @@ unset, every workflow stops with a `noop` naming the missing variable rather
 than running an unscoped Jira search. See
 [Configuration](#configuration) for the optional ones.
 
-### 3. Set secrets
+### 4. Set secrets
 
 ```bash
 gh secret set ATLASSIAN_MCP_BASIC       # Basic auth for the Atlassian MCP server
@@ -90,7 +96,7 @@ gh secret set GH_AW_CI_TRIGGER_TOKEN    # Fine-grained PAT, Contents read/write
 downstream PR workflows, because pushes made with `GITHUB_TOKEN` do not fire
 `pull_request` events. It grants no other authority.
 
-### 4. Create the GitHub labels
+### 5. Create the GitHub labels
 
 ```bash
 gh label create plan-approved            --color 23C18F \
@@ -99,12 +105,12 @@ gh label create copilot-review-addressed --color EDEDED \
   --description "The one automatic Copilot response cycle has been used"
 ```
 
-### 5. Allow Actions to create pull requests
+### 6. Allow Actions to create pull requests
 
 Settings → Actions → General → **Allow GitHub Actions to create and approve
 pull requests**. The PAT does not grant this.
 
-### 6. Verify
+### 7. Verify
 
 ```bash
 gh aw run jira-todo-console
@@ -166,8 +172,18 @@ These are wired in `.github/workflows/shared/jira-pipeline-config.md`, which
 every Jira-touching workflow imports.
 
 Per-project code conventions — test commands, file layout, style — belong in
-an `AGENTS.md` at your repository root. The planner and implementer both read
-it when present.
+an `AGENTS.md` at your repository root. Copy [`templates/AGENTS.md`](templates/AGENTS.md)
+and fill it in.
+
+Its `## Validation` section is the most important part: it declares the exact
+commands that prove a change works. The planner copies them into the plan, so
+you see the validation commitment *before* you approve; the implementer runs
+them and blocks on failure.
+
+If you declare nothing, the pipeline falls back to discovering your
+conventions — and if it finds nothing runnable, it says so verbatim rather
+than implying a change was verified. You will never be shown a `### Validation`
+section that describes work that did not happen.
 
 ### What is deliberately not configurable
 
@@ -209,6 +225,8 @@ including resolved configuration values.
 ## Repository layout
 
 ```
+AGENTS.md                          this repo's own conventions and validation
+templates/AGENTS.md                copy to your repo root and fill in
 .github/workflows/
   shared/jira-pipeline-config.md   configuration seam (env + shared policy)
   *.md                             workflow sources — edit these

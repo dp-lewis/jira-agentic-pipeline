@@ -157,7 +157,17 @@ make a ticket pass this gate.
 ## 5. Inspect the repository
 
 If `AGENTS.md` exists at the repository root, read and follow the conventions it
-describes.
+describes. Take its `## Validation` section as the authoritative list of
+commands that prove a change works, and carry those exact commands into the
+plan's `## Validation` section so the approver sees what will be run.
+
+If there is no `AGENTS.md`, or it declares no validation, determine the
+repository's own convention and record that instead. If the repository has no
+automated validation at all, write
+`No automated validation is declared or discoverable in this repository` in the
+plan's `## Validation` section rather than leaving it vague or inventing a
+plausible-looking command. The approver needs to know they are approving an
+unverifiable change.
 
 Inspect the checked-out repository only as far as needed to turn the ticket into
 a specific plan — locating the relevant components, existing patterns, and test

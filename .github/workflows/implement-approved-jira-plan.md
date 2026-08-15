@@ -96,16 +96,40 @@ without changing the pull request or repository.
 Read `plans/<TICKET-KEY>.md` and inspect only the repository areas required to
 implement its explicit, approved steps. Follow an applicable `AGENTS.md` only
 when it exists and does not conflict with this workflow's safety constraints.
+Its `## Validation`, `## Conventions`, and `## Out of bounds` sections are
+authoritative for how the change should be made and proved.
 
 Make the smallest complete implementation supported by the plan and repository
 evidence. Do not infer requirements that are absent from the plan. Do not modify
 the plan file, workflow files, action files, agent instructions, credentials, or
 environment files.
 
-Run the relevant existing validation for the changed code. If the plan is
-ambiguous, incomplete, blocked by missing dependencies, or cannot be implemented
-within the allowed files, do not make partial changes. Add one pull request
-comment with:
+## Validate
+
+Determine how to validate the change, in this order:
+
+1. If `AGENTS.md` exists at the repository root and has a `## Validation`
+   section, run exactly the commands it lists, in the order given.
+2. Otherwise, discover the repository's own validation convention and run it.
+3. If neither yields a runnable command, run nothing.
+
+Report what actually happened. Never describe validation you did not run, and
+never present inspection as though it were an executed check.
+
+- If declared validation fails, revert the attempted changes and use the
+  blocked outcome below. A failing suite is never an acceptable result.
+- If a declared command cannot run at all — a missing toolchain, an absent
+  dependency the agent may not install — treat that as a blocker, not as a
+  pass. Name the command and the reason.
+- If no validation exists to run, continue, but state
+  `No automated validation is declared or discoverable in this repository`
+  verbatim in the completion comment's `### Validation` section. Do not soften
+  it, and do not substitute a description of the change for a validation
+  result.
+
+If the plan is ambiguous, incomplete, blocked by missing dependencies, or
+cannot be implemented within the allowed files, do not make partial changes.
+Add one pull request comment with:
 
 ```markdown
 ## Implementation blocked

@@ -119,7 +119,13 @@ hoists exactly the variables it references.
 ### What to parameterise versus fix
 
 Parameterise the values a team genuinely differs on: cloud ID, site URL,
-project keys, ready status, file cap, validation command, and engine.
+project keys, ready status, file cap, and engine.
+
+The validation command was originally listed here as a repository variable.
+It went to `AGENTS.md` instead: validation is rarely one command, often needs
+ordering and caveats about toolchains or skipped suites, and belongs in the
+file teams already use for exactly this. A single-line variable could not
+carry that, and two homes for the same fact would be worse than one.
 
 Deliberately **do not** parameterise the branch prefix, plan path, or title
 format. They appear in frontmatter positions such as `allowed-branches` and
@@ -237,8 +243,12 @@ broke. Reconsider per workflow.
    operating procedure, configuration reference, safety model, and
    troubleshooting. Documented CLI invocations are verified against
    `gh aw` v0.86.2 rather than assumed.
-3. **Ship `templates/AGENTS.md`** and make validation-command declaration
-   explicit rather than inferred.
+3. ~~**Ship `templates/AGENTS.md`**~~ **Done.** Template added, plus this
+   repository's own `AGENTS.md`, which two workflows had always looked for but
+   which never existed. Validation is now declared in `AGENTS.md` rather than
+   inferred, and — the substantive fix — an agent that runs no validation must
+   say so verbatim instead of filling the `### Validation` section with prose
+   that reads like verification.
 4. **Convert the console workflow into preflight.**
 5. **Add the abandon and reject path.**
 6. **Choose and implement distribution** via gh-aw shared workflows.

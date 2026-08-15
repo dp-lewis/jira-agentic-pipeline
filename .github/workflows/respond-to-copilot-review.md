@@ -115,8 +115,15 @@ do not make partial changes. Add exactly one pull request comment:
 Then add the `copilot-review-addressed` label. Do not reply to individual review
 comments in this outcome.
 
-Otherwise, apply all actionable fixes and run the relevant existing validation.
-If validation fails, revert the attempted changes and use the blocked outcome.
+Otherwise, apply all actionable fixes and validate them. Determine how to
+validate in this order: the `## Validation` section of a root `AGENTS.md` if
+present, then the repository's own discoverable convention, then nothing.
+
+If validation fails, or a declared command cannot run at all, revert the
+attempted changes and use the blocked outcome. Report only validation you
+actually ran; if none exists, state
+`No automated validation is declared or discoverable in this repository`
+verbatim in the summary comment's `### Validation` section.
 
 After validation passes, call `safeoutputs push_to_pull_request_branch` exactly
 once. Only after that push succeeds:
