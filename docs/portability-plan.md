@@ -233,8 +233,10 @@ broke. Reconsider per workflow.
 1. ~~**Extract configuration.**~~ **Done.** Config seam created, all instance
    values moved to repository variables, JQL project filter fixed, all seven
    workflows recompiled. Both compiler constraints are documented above.
-2. **Write the real README.** After the hardcoded cloud ID, the one-line
-   README is the largest adoption blocker.
+2. ~~**Write the real README.**~~ **Done.** Install steps, ticket contract,
+   operating procedure, configuration reference, safety model, and
+   troubleshooting. Documented CLI invocations are verified against
+   `gh aw` v0.86.2 rather than assumed.
 3. **Ship `templates/AGENTS.md`** and make validation-command declaration
    explicit rather than inferred.
 4. **Convert the console workflow into preflight.**
