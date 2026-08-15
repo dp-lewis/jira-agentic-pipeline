@@ -51,7 +51,7 @@ safe-outputs:
       - "plans/**"
   add-comment:
     max: 1
-    target: triggering
+    target: "*"
     required-labels: [plan-approved]
     pull-requests: true
     issues: false
@@ -59,10 +59,11 @@ safe-outputs:
     title: true
     body: true
     max: 1
-    target: triggering
+    target: "*"
+    required-labels: [plan-approved]
   mark-pull-request-as-ready-for-review:
     max: 1
-    target: triggering
+    target: "*"
     required-labels: [plan-approved]
   report-failure-as-issue: false
 ---
@@ -126,10 +127,11 @@ push succeeds, replace the pull request title and body using
 
 Use the triggering pull request number from the workflow context as
 `pull_request_number` in this output and in every other pull-request safe
-output below. `target: triggering` restricts the permitted target; it does not
-make the triggering pull request number unavailable. Do not omit the
-`update_pull_request` output because of a missing triggering-event context when
-the workflow context provides the pull request number.
+output below. The pull-request outputs use `target: "*"` because this workflow
+can run without a pull-request event context; they must target only the pull
+request number that passed the validation above. Do not omit the
+`update_pull_request` output when that validated pull request number is
+available.
 
 Only after the title and body update succeeds, mark the pull request ready for
 review using `safeoutputs mark_pull_request_as_ready_for_review` exactly once.
