@@ -20,6 +20,8 @@ features:
 concurrency:
   group: jira-planner
   cancel-in-progress: false
+imports:
+  - shared/jira-pipeline-config.md
 network:
   allowed:
     - defaults
@@ -60,32 +62,51 @@ safe-outputs:
 Plan exactly one Jira ticket and open a draft pull request containing that plan
 as a markdown file. Do not write any implementation code.
 
-Cloud ID: `15f7261f-715d-44cc-bdbd-6a1ad73705dc`
+## Configuration
+
+- Jira cloud ID: `${{ env.JIRA_CLOUD_ID }}`
+- Jira site URL: `${{ env.JIRA_SITE_URL }}`
+- Jira project keys: `${{ env.JIRA_PROJECT_KEYS }}`
+- Ready status: `${{ env.JIRA_READY_STATUS }}`
+- Maximum files per plan: `${{ env.PLAN_MAX_FILES }}`
+
+Apply the configuration gate above before reading Jira. Use the cloud ID for
+every Atlassian tool call.
 
 ## 1. Select the ticket
 
 If `${{ inputs.ticket }}` is non-empty, first require it to match the Jira key
-format `^[A-Z][A-Z0-9]+-[0-9]+$`. If it does not match, call `noop` without
+format `^[A-Z][A-Z0-9]+-[0-9]+$`, and require its project prefix to appear in
+`${{ env.JIRA_PROJECT_KEYS }}`. If either check fails, call `noop` without
 reading or modifying Jira. Otherwise, fetch that ticket directly with
 `getJiraIssue`.
 
-Otherwise search with `searchJiraIssuesUsingJql` and `maxResults: 1`:
+Otherwise search with `searchJiraIssuesUsingJql` and `maxResults: 1`, using
+this JQL with the configured project keys and ready status substituted in:
 
 ```jql
-status = "To Do" AND labels = "agent-ready" ORDER BY priority DESC, updated ASC
+project IN (<JIRA_PROJECT_KEYS>) AND status = "<JIRA_READY_STATUS>"
+AND labels = "agent-ready" ORDER BY priority DESC, updated ASC
 ```
 
-If no issue matches, call `noop` once explaining that no agent-ready To Do
-ticket was available. Do not modify Jira and do not open a pull request.
+Treat `${{ env.JIRA_PROJECT_KEYS }}` as a comma-separated list of keys and
+render it as a JQL list, for example `project IN (FEAT, PLAT)`. The project
+filter is mandatory. Never issue a search without it, even if the variable
+looks like it covers every project you expect.
+
+If no issue matches, call `noop` once explaining that no agent-ready ticket was
+available in the configured projects. Do not modify Jira and do not open a
+pull request.
 
 ## 2. Scope what you read
 
 Read only these fields: key, summary, description, status, labels, priority,
 acceptance criteria.
 
-After selecting or fetching a ticket, verify that its status is exactly `To Do`
-and that its labels include `agent-ready`. If either check fails, call `noop`
-without modifying Jira or opening a pull request.
+After selecting or fetching a ticket, verify that its project is one of the
+configured project keys, that its status is exactly
+`${{ env.JIRA_READY_STATUS }}`, and that its labels include `agent-ready`. If
+any check fails, call `noop` without modifying Jira or opening a pull request.
 
 Do not fetch linked issues, parent epics, or referenced tickets. If the ticket
 references other keys, note them in the plan's open questions and move on.
@@ -117,7 +138,8 @@ Before planning anything, assess the ticket against these criteria. A ticket is
 - It does not identify which part of the system changes
 - It requires a product or design decision that has not been made
 - It is a bug report with no reproduction steps
-- Implementing it would plainly require changing more than five files
+- Implementing it would plainly require changing more than
+  `${{ env.PLAN_MAX_FILES }}` files
 
 If the ticket is not actionable:
 
@@ -148,7 +170,7 @@ Create `plans/<TICKET-KEY>.md` with this structure:
 ```markdown
 # <TICKET-KEY>: <ticket summary>
 
-Jira: https://dplewisdev.atlassian.net/browse/<TICKET-KEY>
+Jira: ${{ env.JIRA_SITE_URL }}/browse/<TICKET-KEY>
 Planned: <ISO timestamp> · Plan v1
 
 ## Scope and acceptance criteria

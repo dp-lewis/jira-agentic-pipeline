@@ -73,28 +73,48 @@ of the extraction work, not deferred.
 
 ### The configuration seam
 
-Introduce `.github/aw/jira-pipeline.config.md`, imported by every pipeline
-workflow, holding all instance values:
+**Implemented.** `.github/workflows/shared/jira-pipeline-config.md` holds the
+`env:` block and the shared policy prose, and each Jira-touching workflow pulls
+it in with frontmatter:
 
-```markdown
-## Pipeline configuration
-
-- Jira cloud ID: `${{ vars.JIRA_CLOUD_ID }}`
-- Jira site URL: `${{ vars.JIRA_SITE_URL }}`
-- Jira project keys: `${{ vars.JIRA_PROJECT_KEYS }}`
-- Ready status: `${{ vars.JIRA_READY_STATUS }}`
-- Max files per plan: `${{ vars.PLAN_MAX_FILES }}`
-- Validation command: `${{ vars.VALIDATION_COMMAND }}`
+```yaml
+imports:
+  - shared/jira-pipeline-config.md
 ```
 
-GitHub **repository variables** rather than secrets are the right home: these
-values are not sensitive, and they can be set non-interactively by an install
-script with `gh variable set`.
+GitHub **repository variables** rather than secrets are the right home for
+these values: they are not sensitive, and an install script can set them
+non-interactively with `gh variable set`.
 
-The planner already interpolates `${{ inputs.ticket }}` into its prompt body,
-so expression interpolation into prompts works. Whether `vars` is permitted
-under `strict: true` still needs verifying — gh-aw maintains an expression
-allowlist, and everything else in this plan depends on the answer.
+Two compiler constraints shaped the final design, both established by probing
+`gh aw compile --strict` (gh-aw v0.86.2) rather than assumed:
+
+**`vars.*` is not allowed in prompt bodies.** Compilation fails with
+`unauthorized expressions found`. The allowlist covers `github.event.*`,
+`inputs.*`, `needs.*`, `steps.*`, and `env.*` — but not `vars.*`. The fix is to
+bridge through frontmatter, which is ordinary Actions YAML and not subject to
+the prompt allowlist:
+
+```yaml
+env:
+  JIRA_CLOUD_ID: ${{ vars.JIRA_CLOUD_ID }}
+  JIRA_READY_STATUS: ${{ vars.JIRA_READY_STATUS || 'To Do' }}
+```
+
+The prompt body then reads `${{ env.JIRA_CLOUD_ID }}`, which compiles. The
+`|| 'default'` form works here, so a fresh install boots on sensible defaults.
+
+**Imported markdown is not interpolated.** An `imports:` entry merges the
+imported file's frontmatter (confirmed: the lockfile header attributes each
+variable to `shared/jira-pipeline-config.md`) and prepends its prose to the
+prompt via `{{#runtime-import}}`. But only the *main* workflow's own body has
+its expressions hoisted into `GH_AW_ENV_*` placeholders. An expression written
+in the imported file silently renders empty.
+
+So the shared file carries the `env:` block and expression-free policy prose,
+and each workflow repeats a short `## Configuration` section binding the values
+it actually uses. This is verifiable in the lockfiles: every workflow now
+hoists exactly the variables it references.
 
 ### What to parameterise versus fix
 
@@ -107,6 +127,13 @@ format. They appear in frontmatter positions such as `allowed-branches` and
 exceeds the benefit. Document them instead as the convention the pipeline
 owns: `plan/*` branches and `plans/**` files belong to this pipeline.
 
+The lifecycle labels stay literal for a stronger reason than convenience.
+`required-labels`, the `labels:` trigger filter, and `add-labels.allowed` are
+the pipeline's security boundary — they are what stops an unapproved plan from
+being implemented. Keeping them as literals means the boundary is auditable by
+reading the compiled lockfile, with no indirection through a variable an
+installing team could later change without noticing what it gates.
+
 Per-project code conventions belong in `AGENTS.md`, which two workflows
 already read but which does not exist in this repository. Shipping a template
 gives teams a familiar place to declare test commands, file layout, and code
@@ -115,24 +142,42 @@ style, and removes the guesswork from the validation step.
 ### Package layout
 
 ```
-.github/workflows/          the five pipeline workflows (the product)
+.github/workflows/
+  shared/
+    jira-pipeline-config.md   the configuration seam (implemented)
+  *.md                        the five pipeline workflows (the product)
 .github/aw/
-  jira-pipeline.config.md   the configuration seam
-  instructions.md           repo overlay that SKILL.md already looks for
-templates/AGENTS.md         starting point for installing teams
-install/                    gh variable set, gh label create, secret checklist
+  instructions.md             repo overlay that SKILL.md already looks for
+templates/AGENTS.md           starting point for installing teams
+install/                      gh variable set, gh label create, secret checklist
 docs/
 ```
+
+The shared file lives under `.github/workflows/shared/` rather than
+`.github/aw/` because `imports:` paths resolve relative to the workflows
+directory.
 
 ### Distribution mechanism
 
 `.github/skills/agentic-workflows/SKILL.md` already points at
 `.github/aw/reuse.md` and `.github/aw/create-shared-agentic-workflow.md` in
-`github/gh-aw`. Read both before building anything bespoke. gh-aw has
-first-class support for consuming workflows from another repository, and that
-is a much better adoption story than "clone and edit". Fall back to an
-install script plus `gh aw compile` only if the shared-workflow path does not
-cover this case.
+`github/gh-aw`. Read both before building anything bespoke.
+
+The CLI confirms first-class support for cross-repository distribution, which
+is a much better adoption story than "clone and edit":
+
+| Command | Purpose |
+| --- | --- |
+| `gh aw add` | Add workflows from another repository, a local file, or a URL |
+| `gh aw add-wizard` | Interactive guided install |
+| `gh aw deploy` | Deploy workflows into a target repository via pull request |
+| `gh aw update` | Update installed workflows from their source repository |
+| `gh aw secrets` | Manage the Actions secrets a workflow requires |
+
+`gh aw update` matters most: it means installing teams get fixes without
+re-copying files. Design the package so that everything a team edits lives in
+repository variables and `AGENTS.md`, never in the workflow bodies themselves,
+or updates will clobber local changes.
 
 ### Repurposing the console workflow
 
@@ -185,10 +230,9 @@ broke. Reconsider per workflow.
 
 ## Work sequence
 
-1. **Extract configuration.** Create the config seam, move all instance values
-   to repository variables, and fix the missing JQL project filter. Recompile
-   all lockfiles. This phase also answers the `vars`-under-`strict` question
-   that the rest depends on.
+1. ~~**Extract configuration.**~~ **Done.** Config seam created, all instance
+   values moved to repository variables, JQL project filter fixed, all seven
+   workflows recompiled. Both compiler constraints are documented above.
 2. **Write the real README.** After the hardcoded cloud ID, the one-line
    README is the largest adoption blocker.
 3. **Ship `templates/AGENTS.md`** and make validation-command declaration
@@ -204,7 +248,10 @@ distribution work in step 6 is never done.
 
 ## Open questions
 
-- Does `${{ vars.* }}` interpolate into prompt bodies under `strict: true`?
+- ~~Does `${{ vars.* }}` interpolate into prompt bodies under `strict: true`?~~
+  **Answered: no.** Bridge through frontmatter `env:` and reference `env.*`.
+  Imported files are not interpolated either; see the configuration seam
+  section.
 - Can the agentic engine be selected by configuration, or does it have to be a
   compile-time edit per installation?
 - Should multi-project installs run one pipeline with a multi-key JQL, or one
@@ -212,6 +259,23 @@ distribution work in step 6 is never done.
 - Is the Copilot review stage a required part of the package or an optional
   add-on? It depends on repository ruleset configuration that the installing
   team controls.
+
+## Repository variables
+
+Set these with `gh variable set <NAME> --body "<value>"`.
+
+| Variable | Required | Default | Example |
+| --- | --- | --- | --- |
+| `JIRA_CLOUD_ID` | yes | — | `15f7261f-…` |
+| `JIRA_SITE_URL` | yes | — | `https://acme.atlassian.net` |
+| `JIRA_PROJECT_KEYS` | yes | — | `FEAT` or `FEAT,PLAT` |
+| `JIRA_READY_STATUS` | no | `To Do` | `Selected for Development` |
+| `PLAN_MAX_FILES` | no | `5` | `8` |
+
+The three required variables have no default on purpose. The configuration
+gate makes each workflow `noop` and name the unset variable rather than fall
+back to a guess — which is what previously allowed an unscoped, cross-project
+Jira search.
 
 ## Compiling after changes
 
