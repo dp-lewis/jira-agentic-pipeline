@@ -59,9 +59,16 @@ steps:
       # There is no Actions permission scope that lets GITHUB_TOKEN read the
       # repository's workflow-permissions setting, so this is expected to be
       # unknown on most runs. It is reported, not treated as a failure.
-      can_create_prs="$(gh api "repos/$REPOSITORY/actions/permissions/workflow" \
-        --jq '.can_approve_pull_request_reviews' 2>/dev/null \
-        || echo "unknown:GITHUB_TOKEN cannot read repository administration settings; verify manually in Settings > Actions > General")"
+      # gh writes the error body to stdout before exiting non-zero, so guard
+      # the assignment rather than using `|| echo` — otherwise the raw 403 JSON
+      # is concatenated onto the fallback string.
+      if pr_setting="$(gh api "repos/$REPOSITORY/actions/permissions/workflow" \
+           --jq '.can_approve_pull_request_reviews' 2>/dev/null)" \
+         && [ -n "$pr_setting" ]; then
+        can_create_prs="$pr_setting"
+      else
+        can_create_prs="unknown:GITHUB_TOKEN cannot read repository administration settings; verify manually in Settings > Actions > General"
+      fi
 
       jq -n \
         --arg cloud_id      "$(present "$VAR_JIRA_CLOUD_ID")" \
