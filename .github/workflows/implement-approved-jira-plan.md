@@ -55,6 +55,11 @@ safe-outputs:
     required-labels: [plan-approved]
     pull-requests: true
     issues: false
+  update-pull-request:
+    title: true
+    body: true
+    max: 1
+    target: triggering
   mark-pull-request-as-ready-for-review:
     max: 1
     target: triggering
@@ -109,9 +114,19 @@ comment with:
 
 Otherwise, push the implementation changes to the triggering pull request branch
 using `safeoutputs push_to_pull_request_branch` exactly once. Only after that
-push succeeds, mark the pull request ready for review using
-`safeoutputs mark_pull_request_as_ready_for_review` exactly once. Then add one
-pull request comment with:
+push succeeds, replace the pull request title and body using
+`safeoutputs update_pull_request` exactly once:
+
+- Title: use the exact H1 from `plans/<TICKET-KEY>.md`:
+  `<TICKET-KEY>: <ticket summary>`.
+- Body: include `## Summary`, `## Jira`, `## Implementation`, `## Validation`,
+  and `## Planning record`. Use the Jira URL from the plan file, summarize the
+  implemented change factually, list the validation commands and outcomes, and
+  link to `plans/<TICKET-KEY>.md`.
+
+Only after the title and body update succeeds, mark the pull request ready for
+review using `safeoutputs mark_pull_request_as_ready_for_review` exactly once.
+Then add one pull request comment with:
 
 ```markdown
 <!-- jira-ticket-implementation:v1 -->

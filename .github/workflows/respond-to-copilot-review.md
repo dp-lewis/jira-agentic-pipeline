@@ -86,7 +86,8 @@ changed file names. Continue only when all of these are true:
 2. Its labels include `plan-approved` and do not include
    `copilot-review-addressed`.
 3. Its head branch is exactly `plan/<TICKET-KEY>`.
-4. Its title is exactly `<TICKET-KEY>: plan`.
+4. Its title exactly matches the H1 in `plans/<TICKET-KEY>.md`:
+   `<TICKET-KEY>: <ticket summary>`.
 5. It contains `plans/<TICKET-KEY>.md` and at least one other changed file.
 
 If any condition fails, call `noop` without changing the pull request or

@@ -56,7 +56,8 @@ names, and comments.
 
 Derive `<TICKET-KEY>` from the `plans/<TICKET-KEY>.md` file. Continue only when:
 
-1. The pull request title is exactly `<TICKET-KEY>: plan`.
+1. Its title exactly matches the H1 in `plans/<TICKET-KEY>.md`:
+   `<TICKET-KEY>: <ticket summary>`.
 2. The pull request is no longer a draft.
 3. Its labels include `plan-approved`.
 4. It contains `plans/<TICKET-KEY>.md` and at least one other changed file.
