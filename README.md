@@ -33,7 +33,7 @@ flowchart TD
 The ticket never leaves human control. The agent's authority is capped at
 "open a draft PR containing one markdown file" until someone approves it.
 
-### The six workflows
+### The seven workflows
 
 | Workflow | Trigger | What it may do |
 | --- | --- | --- |
@@ -43,6 +43,7 @@ The ticket never leaves human control. The agent's authority is capped at
 | `jira-implementation-pr-handoff` | Implementation workflow succeeds | Comment on Jira that review is needed |
 | `respond-to-copilot-review` | Copilot submits a review | One bounded fix cycle, then self-label to stop |
 | `jira-plan-pr-closed` | Plan PR closed or merged | Release the ticket from the pipeline and record the outcome |
+| `respond-to-fix-request` | `/fix` comment from a write-access user | Apply a requested change that falls within the approved plan |
 
 Each stage independently re-validates the PR — branch name, title, draft
 state, labels, changed files — rather than trusting that the previous stage
@@ -156,6 +157,20 @@ To make a ticket eligible: set its status to your configured ready status
 4. Add `plan-approved` to start implementation, or close the PR to stop.
 5. Review the resulting implementation PR and merge it yourself.
 
+### Requesting changes with `/fix`
+
+Once a PR has been implemented, comment `/fix <what you want changed>` — either
+on the PR conversation or inline on a specific diff line. The agent applies the
+change, validates it, pushes, and replies.
+
+`/fix` is deliberately bounded by the approved plan. A request that would
+deliver something the plan does not describe is refused with an explanation of
+the gap, not quietly implemented. That keeps the plan as the contract: if you
+want something genuinely new, update the ticket and let the planner re-plan it.
+
+Only users with write access can trigger it. The role check runs before the
+agent starts, so comments from anyone else — including bots — cost nothing.
+
 ### Label lifecycle
 
 | Label | Where | Meaning |
@@ -226,6 +241,9 @@ compiled `.lock.yml`.
   `*credential*` or `*secret*`.
 - All repository writes go through `safe-outputs`, not write-capable tools.
 - Implementation requires a human-applied label. There is no auto-merge.
+- `/fix` is gated on write access via `author_association`, checked before the
+  agent starts, and is bounded by the approved plan — it cannot be used to
+  introduce work that never went through plan review.
 - Jira notifications carry hidden idempotency markers, so retries do not spam
   the ticket.
 - Copilot review gets exactly one fix cycle, preventing review/fix loops.
