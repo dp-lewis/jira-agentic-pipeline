@@ -43,7 +43,7 @@ The ticket never leaves human control. The agent's authority is capped at
 | `jira-implementation-pr-handoff` | Implementation workflow succeeds | Comment on Jira that review is needed |
 | `respond-to-copilot-review` | Copilot submits a review | One bounded fix cycle, then self-label to stop |
 | `jira-plan-pr-closed` | Plan PR closed or merged | Release the ticket from the pipeline and record the outcome |
-| `respond-to-fix-request` | `/fix` comment from a write-access user | Apply a requested change that falls within the approved plan |
+| `respond-to-pr-comment` | Any comment from a write-access user | Answer a question, or apply a change that falls within the approved plan |
 
 Each stage independently re-validates the PR — branch name, title, draft
 state, labels, changed files — rather than trusting that the previous stage
@@ -157,19 +157,30 @@ To make a ticket eligible: set its status to your configured ready status
 4. Add `plan-approved` to start implementation, or close the PR to stop.
 5. Review the resulting implementation PR and merge it yourself.
 
-### Requesting changes with `/fix`
+### Reviewing by comment
 
-Once a PR has been implemented, comment `/fix <what you want changed>` — either
-on the PR conversation or inline on a specific diff line. The agent applies the
-change, validates it, pushes, and replies.
+Just comment normally on an implemented PR — no command or prefix. Write on the
+conversation or inline on a diff line. The agent reads every comment from a
+write-access user and decides what it is:
 
-`/fix` is deliberately bounded by the approved plan. A request that would
-deliver something the plan does not describe is refused with an explanation of
-the gap, not quietly implemented. That keeps the plan as the contract: if you
-want something genuinely new, update the ticket and let the planner re-plan it.
+- **A change request** — it applies the change, validates, pushes, and replies.
+- **A question** — it answers from evidence, citing the file or plan section,
+  and pushes nothing.
+- **Neither** — it stays silent. "LGTM", "merging Monday", and two humans
+  talking to each other get no response. When genuinely unsure it stays quiet,
+  because a missed request costs one follow-up comment while an unwanted reply
+  on every remark makes the pipeline unpleasant to work with.
 
-Only users with write access can trigger it. The role check runs before the
-agent starts, so comments from anyone else — including bots — cost nothing.
+Change requests are bounded by the approved plan. One that would deliver
+something the plan does not describe is refused with the specific gap named,
+not quietly implemented. That keeps the plan as the contract: if you want
+something genuinely new, update the ticket and let the planner re-plan it.
+
+Only users with write access trigger it — the `author_association` check runs
+before the agent starts, so anyone else's comments cost nothing. Bots fail that
+check too, which is what stops it looping on its own replies. Copilot's review
+findings are handled separately by `respond-to-copilot-review`, batched into
+one bounded cycle rather than one run per comment.
 
 ### Label lifecycle
 
@@ -241,9 +252,10 @@ compiled `.lock.yml`.
   `*credential*` or `*secret*`.
 - All repository writes go through `safe-outputs`, not write-capable tools.
 - Implementation requires a human-applied label. There is no auto-merge.
-- `/fix` is gated on write access via `author_association`, checked before the
-  agent starts, and is bounded by the approved plan — it cannot be used to
-  introduce work that never went through plan review.
+- Comment responses are gated on write access via `author_association`,
+  checked before the agent starts, and change requests are bounded by the
+  approved plan — a comment cannot introduce work that never went through plan
+  review.
 - Jira notifications carry hidden idempotency markers, so retries do not spam
   the ticket.
 - Copilot review gets exactly one fix cycle, preventing review/fix loops.
