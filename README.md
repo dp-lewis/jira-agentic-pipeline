@@ -33,7 +33,7 @@ flowchart TD
 The ticket never leaves human control. The agent's authority is capped at
 "open a draft PR containing one markdown file" until someone approves it.
 
-### The seven workflows
+### The six workflows
 
 | Workflow | Trigger | What it may do |
 | --- | --- | --- |
@@ -41,9 +41,8 @@ The ticket never leaves human control. The agent's authority is capped at
 | `jira-plan-pr-handoff` | Plan file pushed to a draft `plan/*` PR | Comment on Jira, swap `agent-ready` → `agent-planned` |
 | `implement-approved-jira-plan` | Human adds `plan-approved` | Implement the plan, retitle the PR, mark ready for review |
 | `jira-implementation-pr-handoff` | Implementation workflow succeeds | Comment on Jira that review is needed |
-| `respond-to-copilot-review` | Copilot submits a review | One bounded fix cycle, then self-label to stop |
 | `jira-plan-pr-closed` | Plan PR closed or merged | Release the ticket from the pipeline and record the outcome |
-| `respond-to-pr-comment` | Any comment from a write-access user | Answer a question, or apply a change that falls within the approved plan |
+| `respond-to-pr-comment` | Any comment from a write-access user or Copilot | Answer a question, or apply a change that falls within the approved plan |
 
 Each stage independently re-validates the PR — branch name, title, draft
 state, labels, changed files — rather than trusting that the previous stage
@@ -176,11 +175,18 @@ something the plan does not describe is refused with the specific gap named,
 not quietly implemented. That keeps the plan as the contract: if you want
 something genuinely new, update the ticket and let the planner re-plan it.
 
-Only users with write access trigger it — the `author_association` check runs
-before the agent starts, so anyone else's comments cost nothing. Bots fail that
-check too, which is what stops it looping on its own replies. Copilot's review
-findings are handled separately by `respond-to-copilot-review`, batched into
-one bounded cycle rather than one run per comment.
+Two authors reach it, and only two: humans with write access, and
+`copilot-pull-request-reviewer[bot]`. Everything else — including this
+workflow's own replies — is rejected before the agent starts, so it cannot loop
+and unauthorised comments cost nothing.
+
+Copilot's inline comments are handled the same way, with one difference: it is
+capped at **one response cycle per PR**, tracked by the
+`copilot-review-addressed` label. Copilot re-reviews after every push, so
+without a cap a fix would prompt a review would prompt a fix, indefinitely.
+Humans are uncapped, because a human stops on their own. Once the label is set,
+further Copilot comments on that PR are ignored and its remaining findings are
+yours to weigh.
 
 ### Label lifecycle
 

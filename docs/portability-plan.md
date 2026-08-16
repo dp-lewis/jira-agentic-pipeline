@@ -240,7 +240,7 @@ who wants changes can only close and rerun.
 
 **Implementation pushes may not trigger CI.** `implement-approved-jira-plan.md`
 pushes without `github-token-for-extra-empty-commit`, whereas
-`respond-to-copilot-review.md:31` uses it. Pushes made with `GITHUB_TOKEN` do
+`respond-to-pr-comment.md` uses it. Pushes made with `GITHUB_TOKEN` do
 not fire `pull_request` workflows, so in a repository with real CI the
 implementation commit may land unchecked and the human reviews an unverified
 diff. Confirm the behaviour and make the two consistent.

@@ -118,7 +118,13 @@ labels, assignee, or priority.
 
 ### 5. Copilot Review Responder
 
-`.github/workflows/respond-to-copilot-review.md` reacts only to submitted
+> **Superseded.** This workflow was folded into
+> `.github/workflows/respond-to-pr-comment.md`, which handles comments from
+> both humans and Copilot. The Copilot cap described below survives as the
+> `copilot-review-addressed` label; the batching does not, since Copilot's
+> inline comments are now answered individually.
+
+`.github/workflows/respond-to-copilot-review.md` reacted only to submitted
 reviews authored by `copilot-pull-request-reviewer[bot]`.
 
 It applies at most one automated response cycle per approved, ready-for-review
