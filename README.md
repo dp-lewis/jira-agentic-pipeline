@@ -291,7 +291,7 @@ templates/AGENTS.md                copy to your repo root and fill in
   *.md                             workflow sources — edit these
   *.lock.yml                       compiled output — generated, commit alongside
 .github/skills/agentic-workflows/  gh-aw authoring router skill
-docs/                              design notes and portability plan
+docs/portability-plan.md           remaining work to make this installable
 ```
 
 After changing any workflow, recompile and commit both files together:
@@ -300,10 +300,89 @@ After changing any workflow, recompile and commit both files together:
 gh aw compile <workflow-id> --strict --approve
 ```
 
+## Design notes
+
+Why the pipeline is shaped the way it is. Each of these was learned by getting
+it wrong first.
+
+### Separate planning from implementation
+
+The original design commented a plan straight onto the Jira ticket. Moving
+plans into draft PRs made them reviewable next to the repository they describe,
+created a durable approval gate, and let implementation land on the same branch
+once approved. The plan PR is the checkpoint the whole design hangs on.
+
+### Refusal is an output
+
+The planner declining a ticket, the implementer blocking on a bad plan, and the
+comment responder rejecting an out-of-scope request are all successes. A
+pipeline that always produces something produces bad PRs. Every stage is
+written to prefer an explicit stop with a reason over a plausible guess.
+
+### An empty queue is a successful no-op
+
+The first planner filed a GitHub issue when no ticket matched. Setting
+`report-failure-as-issue: false` exposed a `noop` path and made "nothing to do"
+quiet and expected, which is what it should be on most days.
+
+### Assume every handoff runs more than once
+
+Cross-system events are not exactly-once. Every Jira comment carries a hidden
+marker containing the PR URL, so retries and later synchronisations do not
+notify the ticket twice.
+
+### A check that could not run is not a check that failed
+
+The preflight once reported `plan-approved` as missing when it existed — the
+token lacked permission, the API returned 403, and the code treated any
+non-zero exit as absence. A false "missing" sends someone off to recreate
+something that is already there. Checks now return three states: `ok`,
+`missing` (a real 404), and `unknown:<reason>`. Unknown never gets a fix
+suggestion and never raises severity. The same rule governs validation: a
+declared command that cannot execute is a blocker, never a silent pass.
+
+## gh-aw behaviours worth knowing
+
+Compiler and runtime specifics that cost real debugging time. Verified against
+gh-aw v0.86.2.
+
+**`vars.*` is rejected inside prompt bodies.** The expression allowlist covers
+`github.event.*`, `inputs.*`, `needs.*`, `steps.*`, and `env.*` — not `vars.*`.
+Bridge through frontmatter `env:`, which is ordinary Actions YAML and not
+subject to the allowlist, then read `env.*` in the prompt.
+
+**Imported Markdown is never interpolated.** An `imports:` entry merges the
+imported file's frontmatter and prepends its prose to the prompt, but only the
+*main* workflow's own body has expressions hoisted into placeholders. An
+expression written in an imported file renders empty and gives no warning. This
+is why every workflow repeats its own `## Configuration` block.
+
+**Frontmatter directives can leak into `on:`.** `allow-bot-authored-trigger-comment`
+passed straight through into the compiled `on:` block, where GitHub read it as
+an unknown event and failed the workflow at startup — no jobs, no error, just a
+workflow that never ran. `gh aw compile` accepted it. If a workflow silently
+stops firing, check its compiled `on:` block against real GitHub event names.
+
+**Safe-output targets depend on the activation path.** `target: triggering`
+rejected a valid explicit PR number because the workflow's activation context
+supplied no pull-request event. PR-metadata outputs use `target: "*"` with a
+validated `pull_request_number` and a `required-labels` guard, which keeps the
+approval boundary while working from any activation path.
+
+**Every workflow gets an auto-create-issue fallback.** No frontmatter toggle
+suppresses it. A workflow with nothing else to say will file an issue on every
+successful run. Instruct `noop` explicitly on the healthy path.
+
+**Workflows read the PR branch, not `main`.** A fix to `AGENTS.md` or any file
+the agent consults does not reach an in-flight plan PR until that branch is
+updated. `gh pr update-branch <n>` before re-triggering.
+
+**Lockfiles are the source of truth at runtime.** Recompile after every change
+and commit the source `.md` with its generated `.lock.yml`. A lockfile that
+disagrees with its source is the most confusing failure mode here.
+
 ## Documentation
 
-- [Design and rationale](docs/jira-agentic-workflow-summary.md) — how the
-  pipeline works and the engineering lessons behind it
 - [Portability plan](docs/portability-plan.md) — the work to make this
   installable elsewhere, including known gaps
 

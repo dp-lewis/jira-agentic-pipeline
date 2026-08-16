@@ -10,8 +10,8 @@ The target install experience is: set a handful of repository variables and
 two secrets, run a preflight workflow that tells you what is missing, label a
 Jira ticket `agent-ready`, and get a plan PR.
 
-See [`jira-agentic-workflow-summary.md`](jira-agentic-workflow-summary.md) for
-what the pipeline currently does and why it is shaped this way.
+See the [README](../README.md) for what the pipeline does, why it is shaped
+that way, and the gh-aw behaviours that shaped it.
 
 ## Current state
 
