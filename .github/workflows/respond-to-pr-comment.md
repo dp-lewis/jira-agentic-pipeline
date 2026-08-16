@@ -7,7 +7,6 @@ on:
     types: [created]
   pull_request_review_comment:
     types: [created]
-  allow-bot-authored-trigger-comment: true
 permissions:
   contents: read
   pull-requests: read
