@@ -1,6 +1,6 @@
 ---
 emoji: 💬
-name: "Plan: Respond to Review"
+name: "Plan: Respond to Comments"
 description: Answer or act on a reviewer's comment on an approved plan PR, within the approved plan's scope.
 on:
   issue_comment:
@@ -71,7 +71,7 @@ safe-outputs:
   report-failure-as-issue: false
 ---
 
-# Plan: Respond to Review
+# Plan: Respond to Comments
 
 A reviewer commented on a pull request. Work out what, if anything, they are
 asking for, and respond appropriately.

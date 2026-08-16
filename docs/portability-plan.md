@@ -51,7 +51,7 @@ verify every occurrence was caught.
   teams want two files, some want twenty.
 - "Run the relevant existing validation" at
   `plan-implement.md:105` and
-  `plan-review-respond.md:118`. The agent has to guess the test command,
+  `plan-comment-respond.md:118`. The agent has to guess the test command,
   and installing teams have no way to declare theirs.
 - The agentic engine. Every workflow hardcodes `copilot-requests: true`, so a
   team standardised on Claude or Codex cannot adopt without editing all five.
@@ -240,7 +240,7 @@ who wants changes can only close and rerun.
 
 **Implementation pushes may not trigger CI.** `plan-implement.md`
 pushes without `github-token-for-extra-empty-commit`, whereas
-`plan-review-respond.md` uses it. Pushes made with `GITHUB_TOKEN` do
+`plan-comment-respond.md` uses it. Pushes made with `GITHUB_TOKEN` do
 not fire `pull_request` workflows, so in a repository with real CI the
 implementation commit may land unchecked and the human reviews an unverified
 diff. Confirm the behaviour and make the two consistent.

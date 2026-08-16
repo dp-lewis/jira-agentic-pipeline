@@ -13,7 +13,7 @@ to Linear or GitHub Issues instead.
 | File | Fires on | Does |
 | --- | --- | --- |
 | `plan-implement.md` | `plan-approved` added to a draft `plan/*` PR | Implements the plan, retitles the PR, marks it ready |
-| `plan-review-respond.md` | Comment from a write-access user or Copilot | Answers questions, applies in-scope changes, refuses the rest |
+| `plan-comment-respond.md` | Comment from a write-access user or Copilot | Answers questions on any plan PR; applies in-scope changes once implemented |
 
 ## `jira-*` — the Jira integration
 

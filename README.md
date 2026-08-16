@@ -42,7 +42,7 @@ The ticket never leaves human control. The agent's authority is capped at
 | `plan-implement` | Human adds `plan-approved` | Implement the plan, retitle the PR, mark ready for review |
 | `jira-implement-notify` | Implementation workflow succeeds | Comment on Jira that review is needed |
 | `jira-ticket-release` | Plan PR closed or merged | Release the ticket from the pipeline and record the outcome |
-| `plan-review-respond` | Any comment from a write-access user or Copilot | Answer a question, or apply a change that falls within the approved plan |
+| `plan-comment-respond` | Any comment from a write-access user or Copilot | Answer a question, or apply a change that falls within the approved plan |
 
 Each stage independently re-validates the PR — branch name, title, draft
 state, labels, changed files — rather than trusting that the previous stage
@@ -158,9 +158,9 @@ To make a ticket eligible: set its status to your configured ready status
 
 ### Reviewing by comment
 
-Just comment normally on an implemented PR — no command or prefix. Write on the
-conversation or inline on a diff line. The agent reads every comment from a
-write-access user and decides what it is:
+Just comment normally — no command or prefix. Write on the conversation or
+inline on a diff line. The agent reads every comment from a write-access user
+and decides what it is:
 
 - **A change request** — it applies the change, validates, pushes, and replies.
 - **A question** — it answers from evidence, citing the file or plan section,
@@ -169,6 +169,12 @@ write-access user and decides what it is:
   talking to each other get no response. When genuinely unsure it stays quiet,
   because a missed request costs one follow-up comment while an unwanted reply
   on every remark makes the pipeline unpleasant to work with.
+
+The two paths have different gates. **Questions work on any plan PR**,
+including a draft one holding nothing but the plan — so you can interrogate a
+plan before approving it, and nothing will be changed in reply. **Change
+requests need an implemented PR**; ask for one on a draft plan PR and it will
+tell you implementation has not run yet.
 
 Change requests are bounded by the approved plan. One that would deliver
 something the plan does not describe is refused with the specific gap named,
