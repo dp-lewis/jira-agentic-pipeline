@@ -5,25 +5,30 @@ is no build, no package manifest, and no runtime test suite.
 
 ## Validation
 
-Validation here depends on who is making the change, because the pipeline's
-implementation agent cannot edit the files whose validation needs a toolchain.
+**There is no automated validation command to run in this repository.**
 
-### For the implementation agent
+Everything here with a compile step lives under `.github/workflows/**`, which
+is in the implementation agent's `excluded-files` list and therefore cannot be
+changed by the pipeline at all. No runnable suite covers the paths the agent
+may touch.
 
-There is no automated validation for the paths you are permitted to change.
-This repository is documentation and workflow definitions; everything with a
-compile step is in your `excluded-files` list and therefore out of bounds.
+Verify by inspection instead: confirm the change matches the approved plan,
+that Markdown renders (headings, code fences, tables, Mermaid blocks closed),
+and that internal links resolve. Then report exactly
+`No automated validation is declared or discoverable in this repository`.
 
-Verify by inspection: confirm the change matches the approved plan, that
-Markdown renders (headings, code fences, tables, Mermaid blocks closed), and
-that internal links resolve. Then report
-`No automated validation is declared or discoverable in this repository`
-in your Validation section. Do not attempt to install tooling, and do not
-treat the absence of a suite as a blocker — it is the expected state here.
+Do not attempt to install tooling. Do not treat the absence of a suite as a
+blocker — it is the expected and correct state here. Do not cite the
+maintainer compile step below as a declared validation command; it does not
+apply to any change the pipeline is permitted to make.
 
-### For maintainers editing workflows
+## Maintainer workflow
 
-Workflow edits are made by humans, not the pipeline, and must be compiled:
+This section is for humans editing workflow sources. It is deliberately **not**
+part of `## Validation`, because the pipeline reads that section as a list of
+commands to run, and this one cannot run in its sandbox.
+
+After editing any workflow:
 
 ```bash
 gh aw compile --strict --approve
@@ -33,12 +38,10 @@ Every workflow must succeed with no errors. Treat any warning as a failure to
 be explained, not ignored. Commit each source `.md` with its generated
 `.lock.yml`.
 
-Two caveats before reporting results:
+Two caveats:
 
 - `gh aw lint` shells out to actionlint and currently exits 125 in this
   environment. That is a tooling failure, not a workflow validation failure.
-  Do not report it as a passing or failing validation — report that it could
-  not run.
 - Compiling repo-wide regenerates `.github/workflows/agentics-maintenance.yml`,
   which is deliberately untracked. Do not commit it as part of unrelated work.
 

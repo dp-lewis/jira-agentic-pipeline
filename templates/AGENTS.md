@@ -32,7 +32,12 @@ Notes for whoever fills this in:
   blocker, so implementation stops — correctly, but permanently. If your
   toolchain-heavy validation only covers paths in the pipeline's
   `excluded-files` (workflows, credentials, agent instructions), do not put it
-  in this section; note it under maintainer instructions instead.
+  in this section at all.
+- **Keep maintainer-only commands out of this section entirely** — not in a
+  subsection, not in an aside. The pipeline reads everything under
+  `## Validation` as commands it should run, and will report an unrunnable one
+  as a failed or unverifiable check even when it is irrelevant to the change.
+  Give those their own top-level section, such as `## Maintainer workflow`.
 - Give commands that work from a clean checkout. The agent runs in a fresh
   container with no warm cache and no prior install.
 - If a command needs a toolchain that is not present by default, say so here.
