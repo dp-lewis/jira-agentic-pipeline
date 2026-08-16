@@ -30,8 +30,8 @@ verify every occurrence was caught.
 
 | Value | Locations |
 | --- | --- |
-| Cloud ID `15f7261f-…` | `jira-todo-ticket-planner.md:63`, `jira-plan-pr-handoff.md:67`, `jira-implementation-pr-handoff.md:71`, `jira-todo-console.md:33` |
-| Site URL `https://dplewisdev.atlassian.net` | `jira-todo-ticket-planner.md:151` |
+| Cloud ID `15f7261f-…` | `jira-plan-create.md:63`, `jira-plan-notify.md:67`, `jira-implement-notify.md:71`, `jira-todo-console.md:33` |
+| Site URL `https://dplewisdev.atlassian.net` | `jira-plan-create.md:151` |
 | Project key `FEAT` | `jira-todo-console.md:34` |
 
 ### Conventions hardcoded in both frontmatter and prose
@@ -47,18 +47,18 @@ verify every occurrence was caught.
 
 ### Project-specific policy presented as universal
 
-- The five-file actionability cap at `jira-todo-ticket-planner.md:120`. Some
+- The five-file actionability cap at `jira-plan-create.md:120`. Some
   teams want two files, some want twenty.
 - "Run the relevant existing validation" at
-  `implement-approved-jira-plan.md:105` and
-  `respond-to-copilot-review.md:118`. The agent has to guess the test command,
+  `plan-implement.md:105` and
+  `plan-review-respond.md:118`. The agent has to guess the test command,
   and installing teams have no way to declare theirs.
 - The agentic engine. Every workflow hardcodes `copilot-requests: true`, so a
   team standardised on Claude or Codex cannot adopt without editing all five.
 
 ### Defect surfaced by the review
 
-The planner's JQL at `jira-todo-ticket-planner.md:75` has **no project
+The planner's JQL at `jira-plan-create.md:75` has **no project
 filter**:
 
 ```jql
@@ -188,7 +188,7 @@ or updates will clobber local changes.
 ### Repurposing the console workflow
 
 **Implemented.** `jira-todo-console.md` was development scaffolding; it is now
-`jira-pipeline-preflight.md`, which verifies that:
+`jira-preflight.md`, which verifies that:
 
 - the three required repository variables are set, and what the optional ones
   resolve to
@@ -224,7 +224,7 @@ issue.
 These are single-operator assumptions rather than portability blockers, but
 they surface immediately at team scale.
 
-~~**No abandon path.**~~ **Closed.** `jira-plan-pr-closed.md` now fires on
+~~**No abandon path.**~~ **Closed.** `jira-ticket-release.md` now fires on
 `pull_request: closed` for `plan/*` branches. A merged PR removes
 `agent-planned` and records delivery; a PR closed unmerged replaces it with
 `agent-rejected` and explains how to re-enter the ticket.
@@ -235,12 +235,12 @@ plan from the same unchanged ticket, and a person would have to close it again.
 `agent-rejected` is terminal until a human swaps the label back.
 
 **No plan revision path.** The plan template writes `Plan v1`
-(`jira-todo-ticket-planner.md:152`) but nothing ever produces a v2. A reviewer
+(`jira-plan-create.md:152`) but nothing ever produces a v2. A reviewer
 who wants changes can only close and rerun.
 
-**Implementation pushes may not trigger CI.** `implement-approved-jira-plan.md`
+**Implementation pushes may not trigger CI.** `plan-implement.md`
 pushes without `github-token-for-extra-empty-commit`, whereas
-`respond-to-pr-comment.md` uses it. Pushes made with `GITHUB_TOKEN` do
+`plan-review-respond.md` uses it. Pushes made with `GITHUB_TOKEN` do
 not fire `pull_request` workflows, so in a repository with real CI the
 implementation commit may land unchecked and the human reviews an unverified
 diff. Confirm the behaviour and make the two consistent.
@@ -249,7 +249,7 @@ diff. Confirm the behaviour and make the two consistent.
 `pull_request: [synchronize]`, which is the sole reason
 `GH_AW_CI_TRIGGER_TOKEN` exists. The implementation handoff already
 demonstrates the alternative: `workflow_run` keyed to a named workflow. Firing
-the plan handoff off "Jira To Do Ticket Planner" completing would drop a
+the plan handoff off "Jira: Create Plan" completing would drop a
 fine-grained PAT with Contents write from the install requirements — a
 meaningful adoption barrier at most organisations.
 

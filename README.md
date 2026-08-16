@@ -37,18 +37,18 @@ The ticket never leaves human control. The agent's authority is capped at
 
 | Workflow | Trigger | What it may do |
 | --- | --- | --- |
-| `jira-todo-ticket-planner` | Daily on weekdays, or manual | Open a draft PR containing only `plans/<KEY>.md` |
-| `jira-plan-pr-handoff` | Plan file pushed to a draft `plan/*` PR | Comment on Jira, swap `agent-ready` → `agent-planned` |
-| `implement-approved-jira-plan` | Human adds `plan-approved` | Implement the plan, retitle the PR, mark ready for review |
-| `jira-implementation-pr-handoff` | Implementation workflow succeeds | Comment on Jira that review is needed |
-| `jira-plan-pr-closed` | Plan PR closed or merged | Release the ticket from the pipeline and record the outcome |
-| `respond-to-pr-comment` | Any comment from a write-access user or Copilot | Answer a question, or apply a change that falls within the approved plan |
+| `jira-plan-create` | Daily on weekdays, or manual | Open a draft PR containing only `plans/<KEY>.md` |
+| `jira-plan-notify` | Plan file pushed to a draft `plan/*` PR | Comment on Jira, swap `agent-ready` → `agent-planned` |
+| `plan-implement` | Human adds `plan-approved` | Implement the plan, retitle the PR, mark ready for review |
+| `jira-implement-notify` | Implementation workflow succeeds | Comment on Jira that review is needed |
+| `jira-ticket-release` | Plan PR closed or merged | Release the ticket from the pipeline and record the outcome |
+| `plan-review-respond` | Any comment from a write-access user or Copilot | Answer a question, or apply a change that falls within the approved plan |
 
 Each stage independently re-validates the PR — branch name, title, draft
 state, labels, changed files — rather than trusting that the previous stage
 behaved. A failed check is a `noop`, not a guess.
 
-`jira-pipeline-preflight` verifies your configuration on demand — see
+`jira-preflight` verifies your configuration on demand — see
 [Verify](#7-verify). It is the only workflow here that is not part of the flow
 itself.
 
@@ -117,7 +117,7 @@ pull requests**. The PAT does not grant this.
 ### 7. Verify
 
 ```bash
-gh aw run jira-pipeline-preflight
+gh aw run jira-preflight
 ```
 
 A read-only check of every step above: required variables, both secrets, the
@@ -151,7 +151,7 @@ To make a ticket eligible: set its status to your configured ready status
 
 1. Write a Jira ticket that meets the contract above. Label it `agent-ready`.
 2. Wait for the planner, or run it manually:
-   `gh aw run jira-todo-ticket-planner --raw-field ticket=PROJ-123`
+   `gh aw run jira-plan-create --raw-field ticket=PROJ-123`
 3. **Read the plan PR.** This is the checkpoint that matters.
 4. Add `plan-approved` to start implementation, or close the PR to stop.
 5. Review the resulting implementation PR and merge it yourself.
@@ -288,7 +288,9 @@ AGENTS.md                          this repo's own conventions and validation
 templates/AGENTS.md                copy to your repo root and fill in
 .github/workflows/
   shared/jira-pipeline-config.md   configuration seam (env + shared policy)
-  *.md                             workflow sources — edit these
+  README.md                        map of the two workflow layers
+  plan-*.md                        the engine — no issue tracker required
+  jira-*.md                        the Jira integration layer
   *.lock.yml                       compiled output — generated, commit alongside
 .github/skills/agentic-workflows/  gh-aw authoring router skill
 docs/portability-plan.md           remaining work to make this installable

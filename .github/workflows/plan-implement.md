@@ -1,6 +1,6 @@
 ---
 emoji: 🛠️
-name: Implement Approved Jira Plan
+name: "Plan: Implement"
 description: Implement an approved Jira plan and ready its pull request for review.
 on:
   pull_request:
@@ -68,7 +68,7 @@ safe-outputs:
   report-failure-as-issue: false
 ---
 
-# Implement Approved Jira Plan
+# Plan: Implement
 
 Implement the approved plan on the triggering pull request. Do not merge it.
 

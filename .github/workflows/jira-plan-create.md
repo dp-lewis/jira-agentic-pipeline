@@ -1,6 +1,6 @@
 ---
 emoji: 🗺️
-name: Jira To Do Ticket Planner
+name: "Jira: Create Plan"
 description: Assess one agent-ready Jira ticket and open a draft PR containing an execution plan.
 on:
   schedule: daily on weekdays
@@ -57,7 +57,7 @@ safe-outputs:
   report-failure-as-issue: false
 ---
 
-# Jira To Do Ticket Planner
+# Jira: Create Plan
 
 Plan exactly one Jira ticket and open a draft pull request containing that plan
 as a markdown file. Do not write any implementation code.

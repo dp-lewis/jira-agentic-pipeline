@@ -1,6 +1,6 @@
 ---
 emoji: 🔚
-name: Jira Plan PR Closed
+name: "Jira: Release Ticket"
 description: Release a Jira ticket from the pipeline when its plan pull request is closed.
 on:
   pull_request:
@@ -40,7 +40,7 @@ safe-outputs:
   report-failure-as-issue: false
 ---
 
-# Jira Plan PR Closed
+# Jira: Release Ticket
 
 A plan pull request has closed. Release its Jira ticket from the pipeline so
 the ticket does not sit in `agent-planned` forever, and record what happened.

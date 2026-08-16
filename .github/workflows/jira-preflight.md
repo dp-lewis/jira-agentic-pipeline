@@ -1,6 +1,6 @@
 ---
 emoji: 🩺
-name: Jira Pipeline Preflight
+name: "Jira: Preflight"
 description: Verify that this repository is correctly configured to run the Jira pipeline.
 on:
   workflow_dispatch:
@@ -138,7 +138,7 @@ safe-outputs:
   report-failure-as-issue: false
 ---
 
-# Jira Pipeline Preflight
+# Jira: Preflight
 
 Verify that this repository is configured to run the Jira pipeline, and report
 what is missing. Change nothing.
