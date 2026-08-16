@@ -280,8 +280,7 @@ broke. Reconsider per workflow.
    with `agent-rejected` as a terminal state rather than an automatic
    re-plan.
 6. **Choose and implement distribution** via gh-aw shared workflows.
-7. **Add a LICENSE.** Nobody installs an unlicensed pipeline into their
-   organisation.
+7. ~~**Add a LICENSE.**~~ **Done.** MIT.
 
 Steps 1 through 5 are independently useful to this repository even if the
 distribution work in step 6 is never done.

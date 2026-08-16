@@ -409,6 +409,10 @@ disagrees with its source is the most confusing failure mode here.
 - [Portability plan](docs/portability-plan.md) — the work to make this
   installable elsewhere, including known gaps
 
+## Licence
+
+[MIT](LICENSE).
+
 ## Known gaps
 
 Tracked in the [portability plan](docs/portability-plan.md):
