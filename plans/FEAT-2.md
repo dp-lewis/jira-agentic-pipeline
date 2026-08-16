@@ -1,6 +1,6 @@
 # FEAT-2: Add a Hello World Markdown file
 
-Jira: https://dplewisdev.atlassian.net/browse/FEAT-2
+Ticket: FEAT-2
 Planned: 2026-08-16T05:16:00Z · Plan v1
 
 ## Scope and acceptance criteria

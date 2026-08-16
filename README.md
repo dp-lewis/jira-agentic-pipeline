@@ -233,7 +233,7 @@ Instance values live in repository variables, never in workflow text, so
 
 | Variable | Required | Default | Example |
 | --- | --- | --- | --- |
-| `JIRA_CLOUD_ID` | yes | — | `15f7261f-…` |
+| `JIRA_CLOUD_ID` | yes | — | `a1b2c3d4-…` |
 | `JIRA_SITE_URL` | yes | — | `https://acme.atlassian.net` |
 | `JIRA_PROJECT_KEYS` | yes | — | `PROJ` or `PROJ,PLAT` |
 | `JIRA_READY_STATUS` | no | `To Do` | `Selected for Development` |

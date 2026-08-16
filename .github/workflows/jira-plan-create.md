@@ -187,7 +187,7 @@ Create `plans/<TICKET-KEY>.md` with this structure:
 ```markdown
 # <TICKET-KEY>: <ticket summary>
 
-Jira: ${{ env.JIRA_SITE_URL }}/browse/<TICKET-KEY>
+Ticket: <TICKET-KEY>
 Planned: <ISO timestamp> · Plan v1
 
 ## Scope and acceptance criteria
@@ -200,6 +200,11 @@ Planned: <ISO timestamp> · Plan v1
 
 ## Risks, dependencies, and open questions
 ```
+
+Record the ticket by key only. Do not write the Jira site URL into the plan
+file: plans are merged and kept, so a URL there is published permanently and
+accumulates one copy per delivered ticket. The key is enough to find the
+ticket, and it keeps the plan readable by workflows that have no Jira access.
 
 Ground the plan in repository evidence. Use ordered, implementable steps and
 name specific files, components, and interfaces where the evidence supports it.

@@ -144,10 +144,12 @@ push succeeds, replace the pull request title and body using
 
 - Title: use the exact H1 from `plans/<TICKET-KEY>.md`:
   `<TICKET-KEY>: <ticket summary>`.
-- Body: include `## Summary`, `## Jira`, `## Implementation`, `## Validation`,
-  and `## Planning record`. Use the Jira URL from the plan file, summarize the
-  implemented change factually, list the validation commands and outcomes, and
-  link to `plans/<TICKET-KEY>.md`.
+- Body: include `## Summary`, `## Ticket`, `## Implementation`,
+  `## Validation`, and `## Planning record`. Under `## Ticket`, state the
+  ticket key from the plan file. Do not construct a tracker URL — this
+  workflow has no tracker configuration and guessing a host would be wrong.
+  Summarize the implemented change factually, list the validation commands and
+  outcomes, and link to `plans/<TICKET-KEY>.md`.
 
 Use the triggering pull request number from the workflow context as
 `pull_request_number` in this output and in every other pull-request safe

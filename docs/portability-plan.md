@@ -30,8 +30,8 @@ verify every occurrence was caught.
 
 | Value | Locations |
 | --- | --- |
-| Cloud ID `15f7261f-…` | `jira-plan-create.md:63`, `jira-plan-notify.md:67`, `jira-implement-notify.md:71`, `jira-todo-console.md:33` |
-| Site URL `https://dplewisdev.atlassian.net` | `jira-plan-create.md:151` |
+| Cloud ID `a1b2c3d4-…` | `jira-plan-create.md:63`, `jira-plan-notify.md:67`, `jira-implement-notify.md:71`, `jira-todo-console.md:33` |
+| Site URL (an `https://<site>.atlassian.net` literal) | `jira-plan-create.md:151` |
 | Project key `FEAT` | `jira-todo-console.md:34` |
 
 ### Conventions hardcoded in both frontmatter and prose
@@ -327,7 +327,7 @@ Set these with `gh variable set <NAME> --body "<value>"`.
 
 | Variable | Required | Default | Example |
 | --- | --- | --- | --- |
-| `JIRA_CLOUD_ID` | yes | — | `15f7261f-…` |
+| `JIRA_CLOUD_ID` | yes | — | `a1b2c3d4-…` |
 | `JIRA_SITE_URL` | yes | — | `https://acme.atlassian.net` |
 | `JIRA_PROJECT_KEYS` | yes | — | `FEAT` or `FEAT,PLAT` |
 | `JIRA_READY_STATUS` | no | `To Do` | `Selected for Development` |
