@@ -1,19 +1,39 @@
 # AGENTS.md
 
 This repository contains GitHub Agentic Workflows, not application code. There
-is no build, no package manifest, and no runtime test suite. Validation means
-proving the workflows still compile.
+is no build, no package manifest, and no runtime test suite.
 
 ## Validation
+
+Validation here depends on who is making the change, because the pipeline's
+implementation agent cannot edit the files whose validation needs a toolchain.
+
+### For the implementation agent
+
+There is no automated validation for the paths you are permitted to change.
+This repository is documentation and workflow definitions; everything with a
+compile step is in your `excluded-files` list and therefore out of bounds.
+
+Verify by inspection: confirm the change matches the approved plan, that
+Markdown renders (headings, code fences, tables, Mermaid blocks closed), and
+that internal links resolve. Then report
+`No automated validation is declared or discoverable in this repository`
+in your Validation section. Do not attempt to install tooling, and do not
+treat the absence of a suite as a blocker — it is the expected state here.
+
+### For maintainers editing workflows
+
+Workflow edits are made by humans, not the pipeline, and must be compiled:
 
 ```bash
 gh aw compile --strict --approve
 ```
 
-This must report every workflow succeeding with no errors. Treat any warning
-as a failure to be explained, not ignored.
+Every workflow must succeed with no errors. Treat any warning as a failure to
+be explained, not ignored. Commit each source `.md` with its generated
+`.lock.yml`.
 
-Two caveats worth knowing before reporting results:
+Two caveats before reporting results:
 
 - `gh aw lint` shells out to actionlint and currently exits 125 in this
   environment. That is a tooling failure, not a workflow validation failure.

@@ -27,10 +27,17 @@ npm test
 
 Notes for whoever fills this in:
 
+- **Declare only commands the agent can actually run, for files it is actually
+  allowed to change.** A declared command that cannot execute is treated as a
+  blocker, so implementation stops — correctly, but permanently. If your
+  toolchain-heavy validation only covers paths in the pipeline's
+  `excluded-files` (workflows, credentials, agent instructions), do not put it
+  in this section; note it under maintainer instructions instead.
 - Give commands that work from a clean checkout. The agent runs in a fresh
   container with no warm cache and no prior install.
 - If a command needs a toolchain that is not present by default, say so here.
-  The agent cannot install system-level dependencies.
+  The agent cannot install system-level dependencies, and cannot install
+  `gh` CLI extensions.
 - If some suites are too slow or need credentials, name the subset that is
   safe and fast to run, and say explicitly what is being skipped.
 - If this project genuinely has no automated validation, write that sentence
