@@ -49,8 +49,8 @@ state, labels, changed files — rather than trusting that the previous stage
 behaved. A failed check is a `noop`, not a guess.
 
 `jira-pipeline-preflight` verifies your configuration on demand — see
-[Verify](#7-verify). `daily-activity-report` is unrelated to the pipeline and
-can be removed without affecting anything.
+[Verify](#7-verify). It is the only workflow here that is not part of the flow
+itself.
 
 ## Requirements
 
