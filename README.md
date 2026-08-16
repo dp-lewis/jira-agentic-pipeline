@@ -381,6 +381,21 @@ approval boundary while working from any activation path.
 suppresses it. A workflow with nothing else to say will file an issue on every
 successful run. Instruct `noop` explicitly on the healthy path.
 
+**Safe outputs strip agent-authored HTML comments.** A `<!-- marker -->` an
+agent writes into a GitHub comment is silently removed — only gh-aw's own
+`gh-aw-agentic-workflow` and `gh-aw-workflow-call-id` markers survive, which is
+sensible, since otherwise an agent could forge them. Hidden markers therefore
+work on Jira, which is reached over MCP, but never on GitHub. Identify a
+workflow's own GitHub comments by a visible heading plus gh-aw's call-id
+marker. This cost a real bug: a downstream gate required a marker that could
+never exist, and the agent reported the gate as passed anyway.
+
+**An agent will paraphrase a marker unless told not to.** Stating the literal
+in prose and putting a template beneath it gets you the template with an
+invented marker on top. Give the exact string on its own line, say to copy it
+character for character, and say what breaks if it does not — then make the
+duplicate check match a stable token rather than one long concatenated string.
+
 **Workflows read the PR branch, not `main`.** A fix to `AGENTS.md` or any file
 the agent consults does not reach an in-flight plan PR until that branch is
 updated. `gh pr update-branch <n>` before re-triggering.

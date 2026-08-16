@@ -107,9 +107,10 @@ The trigger fires from two places and both must be handled:
 
 Read the comment's author login.
 
-Ignore the comment entirely and call `noop` when it is one of your own earlier
-responses, which carry the marker `<!-- pr-comment-response:v1 -->`, or when
-the author is any bot other than `copilot-pull-request-reviewer[bot]`.
+Ignore the comment entirely and call `noop` when the author is any bot other
+than `copilot-pull-request-reviewer[bot]`. Your own earlier responses are
+posted by `github-actions[bot]`, so this rule covers them; they are also
+rejected by the activation gate before this workflow starts.
 
 ### Copilot's cap
 
@@ -199,8 +200,6 @@ entirely sensible and still be out of scope; that is not a reason to accept it.
 If out of scope, make no changes and add exactly one comment:
 
 ```markdown
-<!-- pr-comment-response:v1 -->
-
 ## Requested change is out of scope
 
 <what was asked for, in one sentence>
@@ -232,9 +231,7 @@ Only after that push succeeds:
 2. Add exactly one pull request comment:
 
    ```markdown
-   <!-- pr-comment-response:v1 -->
-
-   ## Change applied
+      ## Change applied
 
    ### Requested
    ### Changed
@@ -243,6 +240,9 @@ Only after that push succeeds:
 
 ## Constraints
 
+- Do not add HTML comment markers to GitHub comments. Safe outputs strip
+  agent-authored HTML comments, so they vanish without error. gh-aw appends its
+  own `gh-aw-workflow-call-id` marker, which is what identifies these replies.
 - Never remove `plan-approved`, convert the pull request to draft, merge it, or
   modify the plan file.
 - One comment produces at most one push. Concurrent comments are queued, not

@@ -68,8 +68,15 @@ Derive `<TICKET-KEY>` from the `plans/<TICKET-KEY>.md` file. Continue only when:
 2. The pull request is no longer a draft.
 3. Its labels include `plan-approved`.
 4. It contains `plans/<TICKET-KEY>.md` and at least one other changed file.
-5. A pull request comment contains `<!-- jira-ticket-implementation:v1 -->`
-   followed by `## Implementation complete`.
+5. A pull request comment posted by the implementation workflow contains the
+   heading `## Implementation complete`. Identify that comment by the
+   `gh-aw-workflow-call-id` marker gh-aw appends automatically, which ends in
+   `/plan-implement`.
+
+Check condition 5 by actually reading the pull request's comments. If you
+cannot find such a comment, the check has failed — call `noop`. Never record a
+condition as satisfied because it ought to be; a gate that reports a pass it
+did not verify is worse than no gate.
 
 If any check fails, call `noop` without reading or modifying Jira.
 
@@ -79,10 +86,25 @@ Apply the configuration gate above, then fetch the derived ticket using the
 configured cloud ID. Continue only when its project is one of the configured
 project keys and its labels include `agent-planned`; otherwise call `noop`.
 
-If the ticket already has a comment containing
-`<!-- jira-ticket-implementation:v1 pr:<PR-URL> -->`, call `noop`.
+### Duplicate check
 
-Otherwise, add exactly one Jira comment beginning with that marker. Include:
+Read the ticket's existing comments. If any of them contains both the text
+`jira-implementation-notified` and this pull request's URL, this notification
+has already been sent: call `noop`.
+
+### The comment
+
+Otherwise add exactly one Jira comment. Its first line must be this marker,
+copied character for character with `<PR-URL>` replaced by the pull request's
+full URL and nothing else altered:
+
+    <!-- jira-implementation-notified pr:<PR-URL> -->
+
+Do not reword the marker, drop it, shorten it, or substitute one of your own.
+It is the only thing preventing a duplicate notification on every retry, and a
+marker that differs by one character disables it silently.
+
+After the marker, include:
 
 ```markdown
 ## Implementation ready for review

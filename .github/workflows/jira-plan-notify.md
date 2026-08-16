@@ -77,11 +77,22 @@ configured cloud ID. Continue only when its project is one of the configured
 project keys, its status is exactly `${{ env.JIRA_READY_STATUS }}`, and its
 labels include `agent-ready`; otherwise call `noop`.
 
-If the ticket already has a comment containing
-`<!-- jira-ticket-planner:v2 pr:<PR-URL> -->`, do not add another comment.
-Otherwise, add exactly one Jira comment beginning with that marker. Include the
-pull request URL, the heading `## Plan ready for review`, and a concise two-line
-summary taken from the plan file. State that the draft plan is ready for review
+Read the ticket's existing comments. If any contains both the text
+`jira-plan-notified` and this pull request's URL, do not add another comment.
+
+Otherwise add exactly one Jira comment whose **first line is this marker**,
+copied character for character with `<PR-URL>` replaced by the pull request's
+full URL:
+
+    <!-- jira-plan-notified pr:<PR-URL> -->
+
+Do not reword the marker or invent your own. It is the only thing preventing a
+duplicate notification when this workflow runs again, and the check matches on
+exact text.
+
+After the marker, include the pull request URL, the heading
+`## Plan ready for review`, and a concise two-line summary taken from the plan
+file. State that the draft plan is ready for review
 and that applying the `plan-approved` label to the pull request will trigger
 implementation.
 

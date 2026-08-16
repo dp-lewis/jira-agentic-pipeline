@@ -87,10 +87,16 @@ ticket has already been released or never entered the pipeline: call `noop`.
 
 ### If the pull request was merged
 
-If the ticket already has a comment containing
-`<!-- jira-ticket-delivered:v1 pr:<PR-URL> -->`, call `noop`.
+Read the ticket's existing comments. If any contains both the text
+`jira-ticket-delivered` and this pull request's URL, call `noop`.
 
-Otherwise add exactly one Jira comment beginning with that marker:
+Otherwise add exactly one Jira comment whose **first line is this marker**,
+copied character for character with `<PR-URL>` replaced by the pull request's
+full URL:
+
+    <!-- jira-ticket-delivered pr:<PR-URL> -->
+
+Then the body:
 
 ```markdown
 ## Implementation delivered
@@ -106,10 +112,16 @@ replacement label — the ticket is done with the pipeline.
 
 ### If the pull request was closed without merging
 
-If the ticket already has a comment containing
-`<!-- jira-ticket-withdrawn:v1 pr:<PR-URL> -->`, call `noop`.
+Read the ticket's existing comments. If any contains both the text
+`jira-ticket-withdrawn` and this pull request's URL, call `noop`.
 
-Otherwise add exactly one Jira comment beginning with that marker:
+Otherwise add exactly one Jira comment whose **first line is this marker**,
+copied character for character with `<PR-URL>` replaced by the pull request's
+full URL:
+
+    <!-- jira-ticket-withdrawn pr:<PR-URL> -->
+
+Then the body:
 
 ```markdown
 ## Plan withdrawn
@@ -132,7 +144,14 @@ re-enter the ticket. Never restore `agent-ready` automatically: the planner
 would immediately produce the same plan from the same unchanged ticket, and a
 person would have to close it again.
 
-## 4. Constraints
+## 4. Marker discipline
+
+Both markers above are literal strings. Do not reword, abbreviate, or invent
+your own. The duplicate check is the only thing stopping this workflow from
+notifying the ticket again on every retry, and it matches on the exact text —
+a marker that differs by a single character disables it without any error.
+
+## 5. Constraints
 
 Do not change the ticket's status, assignee, priority, or any field other than
 the labels described above. Do not reopen, comment on, or otherwise modify the

@@ -143,10 +143,17 @@ Before planning anything, assess the ticket against these criteria. A ticket is
 
 If the ticket is not actionable:
 
-1. Add one Jira comment beginning with
-   `<!-- jira-ticket-planner:not-actionable -->` that lists precisely what is
-   missing and what would make the ticket plannable. Be specific — name the
-   decision that is missing, not "needs more detail".
+1. Read the ticket's existing comments. If any already contains the text
+   `jira-ticket-not-actionable`, do not comment again — the ticket has already
+   been told, and repeating it on every run is noise. Otherwise add one Jira
+   comment whose first line is this marker, copied character for character:
+
+       <!-- jira-ticket-not-actionable -->
+
+   Do not reword it or invent your own; the duplicate check matches exact text.
+   After the marker, list precisely what is missing and what would make the
+   ticket plannable. Be specific — name the decision that is missing, not
+   "needs more detail".
 2. Do not change any labels.
 3. Do not open a pull request.
 4. Stop.

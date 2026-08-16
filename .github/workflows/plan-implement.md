@@ -162,14 +162,18 @@ review using `safeoutputs mark_pull_request_as_ready_for_review` exactly once.
 Then add one pull request comment with:
 
 ```markdown
-<!-- jira-ticket-implementation:v1 -->
-
 ## Implementation complete
 
 ### Changed areas
 ### Validation
 ### Remaining risks or follow-up
 ```
+
+Use the `## Implementation complete` heading exactly. Downstream workflows
+identify this comment by that heading combined with the
+`gh-aw-workflow-call-id` marker gh-aw appends automatically. Do not add an
+HTML comment marker of your own: safe outputs strip agent-authored HTML
+comments from GitHub, so it would silently vanish.
 
 Use factual, concise content. State validation commands that were run and their
 outcome. A successful implementation must produce all four outputs in this
