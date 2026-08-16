@@ -279,7 +279,29 @@ broke. Reconsider per workflow.
 5. ~~**Add the abandon and reject path.**~~ **Done.** Both outcomes handled,
    with `agent-rejected` as a terminal state rather than an automatic
    re-plan.
-6. **Choose and implement distribution** via gh-aw shared workflows.
+6. ~~**Choose and implement distribution.**~~ **Done.** A root `aw.yml`
+   manifest makes the repository an installable package: `gh aw add
+   dp-lewis/automation-tests` installs all seven workflows plus the shared
+   import and compiles them, verified into a scratch repository.
+
+   Notes from deriving the format, which is not documented locally and was
+   established by pushing candidate manifests to a branch and reading the
+   validator's complaints:
+
+   - **The manifest does not enumerate workflows.** Installation discovers
+     everything under `.github/workflows/`, including the `shared/` import and
+     the directory README. `workflows:` is rejected outright; `files:` copies
+     supporting files but installs no workflows; `agents:` is for agent
+     definitions under `agents/` and listing workflow paths there is silently
+     ignored at install time while emitting a compile warning on every run.
+     The manifest's job is to mark the repository as a package, not to
+     inventory it.
+   - `name` is required; `manifest-version` is expected.
+   - `config` was deliberately left out. It must be an array, and declaring it
+     blocks non-interactive `gh aw add` entirely in favour of
+     `gh aw add-wizard`. It buys little here, because gh-aw already surfaces
+     required secrets to the installer from workflow frontmatter — an install
+     warns about `ATLASSIAN_MCP_BASIC` without being told to.
 7. ~~**Add a LICENSE.**~~ **Done.** MIT.
 
 Steps 1 through 5 are independently useful to this repository even if the

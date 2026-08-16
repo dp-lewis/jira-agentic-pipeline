@@ -1,0 +1,9 @@
+manifest-version: "1"
+name: jira-agentic-pipeline
+emoji: 🎫
+description: |
+  Turn a well-specified Jira ticket into a planned, implemented and reviewed
+  pull request. Agents do bounded work; people decide what is ready to plan,
+  approve the plan, review the result, and merge it. Nothing merges
+  automatically.
+license: MIT

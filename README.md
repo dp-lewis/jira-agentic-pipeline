@@ -63,11 +63,22 @@ itself.
 
 ### 1. Add the workflows
 
-This repository is not yet published as a `gh aw` package. For now, copy
-`.github/workflows/*.md`, `.github/workflows/shared/`, and compile:
+```bash
+gh aw add dp-lewis/automation-tests
+```
+
+That installs all seven workflows, the shared configuration import they
+depend on, and compiles them. Append `@<tag-branch-or-sha>` to pin a version.
+
+Later, `gh aw update` pulls fixes without touching your configuration —
+provided you have kept your changes in repository variables and `AGENTS.md`
+rather than editing the workflow bodies.
+
+To take only the tracker-agnostic engine, name the two files instead:
 
 ```bash
-gh aw compile --strict --approve
+gh aw add dp-lewis/automation-tests/.github/workflows/plan-implement.md
+gh aw add dp-lewis/automation-tests/.github/workflows/plan-comment-respond.md
 ```
 
 ### 2. Declare your conventions
@@ -412,6 +423,21 @@ disagrees with its source is the most confusing failure mode here.
 ## Licence
 
 [MIT](LICENSE).
+
+## Deliberate choices
+
+**Plans are merged and kept.** A delivered ticket leaves its
+`plans/<KEY>.md` on the default branch as a record of what a human approved.
+Two consequences follow, and both are intended: the directory grows by one
+file per delivered ticket, and a ticket that already has a plan file will not
+be planned again — the planner treats an existing plan as proof the work has
+been done. If you need a follow-up, raise a new ticket.
+
+The alternative — deleting the plan during implementation — was considered and
+rejected. It would mean removing `plans/**` from the implementation workflow's
+`excluded-files`, which is what makes "the agent cannot rewrite the contract it
+is judged against" a compile-time guarantee rather than a promise in a prompt.
+That guarantee is worth more than a tidy directory.
 
 ## Known gaps
 
