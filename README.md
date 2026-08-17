@@ -70,9 +70,26 @@ gh aw add dp-lewis/jira-agentic-pipeline
 That installs all seven workflows, the shared configuration import they
 depend on, and compiles them. Append `@<tag-branch-or-sha>` to pin a version.
 
+**Expect warnings on first install.** For each Jira workflow you will see:
+
+```
+New restricted secret(s):
+  - ATLASSIAN_MCP_BASIC
+```
+
+That is gh-aw pointing out that the workflows reference a secret your
+repository does not have yet. It is the expected state before step 4, not a
+failure — the install completes regardless, and the preflight in step 7 will
+confirm once the secret is set.
+
 Later, `gh aw update` pulls fixes without touching your configuration —
 provided you have kept your changes in repository variables and `AGENTS.md`
 rather than editing the workflow bodies.
+
+Updates track this repository's default branch and gh-aw applies a three-day
+cooldown before adopting any commit, so a fix reaches you a few days after it
+lands rather than immediately. Pinning with `@<tag>` fixes your install at
+that snapshot; it does not create a separate release channel.
 
 To take only the tracker-agnostic engine, name the two files instead:
 
