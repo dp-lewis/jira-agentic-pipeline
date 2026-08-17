@@ -281,7 +281,7 @@ broke. Reconsider per workflow.
    re-plan.
 6. ~~**Choose and implement distribution.**~~ **Done.** A root `aw.yml`
    manifest makes the repository an installable package: `gh aw add
-   dp-lewis/automation-tests` installs all seven workflows plus the shared
+   dp-lewis/jira-agentic-pipeline` installs all seven workflows plus the shared
    import and compiles them, verified into a scratch repository.
 
    Notes from deriving the format, which is not documented locally and was

@@ -64,7 +64,7 @@ itself.
 ### 1. Add the workflows
 
 ```bash
-gh aw add dp-lewis/automation-tests
+gh aw add dp-lewis/jira-agentic-pipeline
 ```
 
 That installs all seven workflows, the shared configuration import they
@@ -77,8 +77,8 @@ rather than editing the workflow bodies.
 To take only the tracker-agnostic engine, name the two files instead:
 
 ```bash
-gh aw add dp-lewis/automation-tests/.github/workflows/plan-implement.md
-gh aw add dp-lewis/automation-tests/.github/workflows/plan-comment-respond.md
+gh aw add dp-lewis/jira-agentic-pipeline/.github/workflows/plan-implement.md
+gh aw add dp-lewis/jira-agentic-pipeline/.github/workflows/plan-comment-respond.md
 ```
 
 ### 2. Declare your conventions
