@@ -53,3 +53,9 @@ is invalid YAML.
 ```bash
 gh aw compile --strict --approve
 ```
+
+This file lives in `docs/` rather than beside the workflows on purpose. gh-aw
+treats every `.md` under `.github/workflows/` as a workflow, so a README there
+is picked up as a shared workflow and reported as an error during every
+install — cosmetic, but a poor first impression for someone installing the
+package.

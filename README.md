@@ -305,11 +305,11 @@ AGENTS.md                          this repo's own conventions and validation
 templates/AGENTS.md                copy to your repo root and fill in
 .github/workflows/
   shared/jira-pipeline-config.md   configuration seam (env + shared policy)
-  README.md                        map of the two workflow layers
   plan-*.md                        the engine — no issue tracker required
   jira-*.md                        the Jira integration layer
   *.lock.yml                       compiled output — generated, commit alongside
 .github/skills/agentic-workflows/  gh-aw authoring router skill
+docs/workflows.md                  what each workflow does, and the traps
 docs/portability-plan.md           remaining work to make this installable
 ```
 
@@ -417,6 +417,8 @@ disagrees with its source is the most confusing failure mode here.
 
 ## Documentation
 
+- [Workflow reference](docs/workflows.md) — what each workflow does, how the
+  two layers split, and the gh-aw traps worth knowing before editing one
 - [Portability plan](docs/portability-plan.md) — the work to make this
   installable elsewhere, including known gaps
 
